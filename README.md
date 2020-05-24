@@ -1,6 +1,42 @@
 # silvia-pi
 A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing PID temperature control.
 
+## Magnus' mods
+### Current Hardware
+* Raspberry Pi Zero W
+* Adafruit PT100 RTD Temperature Sensor Amplifier - MAX31865
+* ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor
+* Crydom D2425D Dual SSR
+
+### Upcoming Hardware
+* Proportional relay
+   * MCPC2450A or similar
+   * Adafruit MCP4725 for control
+
+### Done
+None
+
+### Upcoming (in order of implementation)
+* Remove scheduling
+   * I'd rather do scheduling via MQTT through Home Assistant
+* Switch to Celsius
+* Use a MAX31865 temperature sensor
+* Steam temperature control
+* MQTT publishing and control
+* Digital controls
+   * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
+   * Proportional relay for the boiler
+* Smart scale integration
+    * Probably a Decent Scale
+* Preinfusion
+
+### If I feel like it
+* Pressure gauge
+* GraphQL API
+* React frontend
+
+## Original README
+
 #### Currently Implemented Features:
 * Brew temperature control
 * RESTful API
