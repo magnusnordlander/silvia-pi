@@ -246,8 +246,11 @@ def mqtt_subscribe_loop(dummy, state):
   def on_message(client, userdata, msg):
     if msg.topic == "silvia/settemp/set":
       state['settemp'] = float(msg.payload)
+      client.publish("silvia/settemp", state['settemp'])
     elif msg.topic == "silvia/is_awake/set":
       state['is_awake'] = bool(distutils.util.strtobool(msg.payload))
+      client.publish("silvia/is_awake", state['is_awake'])
+    print(msg.topic+" "+str(msg.payload))
 
   client = mqtt.Client()
   client.on_connect = on_connect
@@ -272,18 +275,18 @@ def mqtt_publish_loop(dummy, state):
   client.connect("192.168.10.66", 1883, 60)
 
   while True:
-    if "avgtemp" in pidstate:
-      client.publish("silvia/temperature", pidstate['avgtemp'])
+    if "avgtemp" in state:
+      client.publish("silvia/temperature", state['avgtemp'])
     else:
       client.publish("silvia/temperature", "N/A")
 
-    if "settemp" in pidstate:
-      client.publish("silvia/settemp", pidstate['settemp'])
+    if "settemp" in state:
+      client.publish("silvia/settemp", state['settemp'])
     else:
       client.publish("silvia/settemp", "N/A")
 
-    if "is_awake" in pidstate:
-      client.publish("silvia/is_awake", pidstate['is_awake'])
+    if "is_awake" in state:
+      client.publish("silvia/is_awake", state['is_awake'])
     else:
       client.publish("silvia/is_awake", "N/A")
 
