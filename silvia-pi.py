@@ -232,6 +232,45 @@ def rest_server(dummy,state):
 
   run(host='0.0.0.0',port=conf.port,server='cheroot')
 
+def mqtt_subscribe_loop(dummy, state):
+  import paho.mqtt.client as mqtt
+  def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+    # Subscribing in on_connect() means that if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    client.subscribe("$SYS/#")
+
+  # The callback for when a PUBLISH message is received from the server.
+  def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+
+  client = mqtt.Client()
+  client.on_connect = on_connect
+  client.on_message = on_message
+
+  client.connect("192.168.10.66", 1883, 60)
+
+  # Blocking call that processes network traffic, dispatches callbacks and
+  # handles reconnecting.
+  # Other loop*() functions are available that give a threaded interface and a
+  # manual interface.
+  client.loop_forever()
+
+def mqtt_publish_loop(dummy, state):
+  import paho.mqtt.client as mqtt
+  def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+  client = mqtt.Client()
+  client.on_connect = on_connect
+
+  client.connect("192.168.10.66", 1883, 60)
+
+  while True:
+    client.publish("silvia/temperature", pidstate['avgtemp'])
+    sleep(10)
+
 if __name__ == '__main__':
   from multiprocessing import Process, Manager
   from time import sleep
