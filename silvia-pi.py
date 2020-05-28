@@ -299,6 +299,11 @@ if __name__ == '__main__':
   r.daemon = True
   r.start()
 
+  print("Starting MQTT Publish thread...")
+  mp = Process(target=mqtt_publish_loop,args=(1,pidstate))
+  mp.daemon = True
+  mp.start()
+
   #Start Watchdog loop
   print("Starting Watchdog...")
   piderr = 0
@@ -309,8 +314,8 @@ if __name__ == '__main__':
   lasti = pidstate['i']
   sleep(1)
 
-  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive())
-  while p.is_alive() and h.is_alive() and r.is_alive():
+  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive(), mp.is_alive())
+  while p.is_alive() and h.is_alive() and r.is_alive() and mp.is_alive():
     curi = pidstate['i']
     if curi == lasti :
       piderr = piderr + 1
