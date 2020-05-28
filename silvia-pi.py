@@ -249,7 +249,7 @@ def mqtt_subscribe_loop(dummy, state):
       state['settemp'] = float(msg.payload)
       client.publish("silvia/settemp", state['settemp'])
     elif msg.topic == "silvia/is_awake/set":
-      state['is_awake'] = bool(strtobool(msg.payload))
+      state['is_awake'] = msg.payload == b'True'
       client.publish("silvia/is_awake", state['is_awake'])
 
   client = mqtt.Client()
