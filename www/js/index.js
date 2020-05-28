@@ -16,8 +16,6 @@ function refreshinputs() {
     timeout: 500,
     success: function ( resp ) {
       $("#inputSetTemp").val( resp.settemp );
-      $("#inputSleep").val( resp.sleep_time );
-      $("#inputWake").val( resp.wake_time );
     }
   });
 }
@@ -71,40 +69,6 @@ $(document).ready(function(){
     );
   });
 
-  $("#inputSleep").change(function(){
-    $.post(
-      "/setsleep",
-      { sleep: $("#inputSleep").val() }
-    );
-  });
-
-  $("#inputWake").change(function(){
-    $.post(
-      "/setwake",
-      { wake: $("#inputWake").val() }
-    );
-  });
-
-  $("#btnTimerDisable").click(function(){
-    $.post("/scheduler",{ scheduler: "False" });
-    $("#inputWake").hide();
-    $("#labelWake").hide();
-    $("#inputSleep").hide();
-    $("#labelSleep").hide();
-    $("#btnTimerDisable").hide();
-    $("#btnTimerEnable").show();
-  });
-
-  $("#btnTimerEnable").click(function(){
-    $.post("/scheduler",{ scheduler: "True" });
-    $("#inputWake").show();
-    $("#labelWake").show();
-    $("#inputSleep").show();
-    $("#labelSleep").show();
-    $("#btnTimerDisable").show();
-    $("#btnTimerEnable").hide();
-  });
-
 });
 
 setInterval(function() {
@@ -113,20 +77,7 @@ setInterval(function() {
       url: "/allstats",
       timeout: 500,
       success: function ( resp ) {
-        if (resp.sched_enabled == true) {
-         $("#inputWake").show();
-         $("#inputSleep").show();
-         $("#btnTimerSet").show();
-         $("#btnTimerDisable").show();
-         $("#btnTimerEnable").hide();
-        } else {
-         $("#inputWake").hide();
-         $("#inputSleep").hide();
-         $("#btnTimerSet").hide();
-         $("#btnTimerDisable").hide();
-         $("#btnTimerEnable").show();
-        }
-        curtemp.append(new Date().getTime(), resp.tempf);
+        curtemp.append(new Date().getTime(), resp.tempc);
         settemp.append(new Date().getTime(), resp.settemp);
         settempm.append(new Date().getTime(), resp.settemp-4);
         settempp.append(new Date().getTime(), resp.settemp+4);
@@ -135,7 +86,7 @@ setInterval(function() {
         dterm.append(new Date().getTime(), resp.dterm);
         pidval.append(new Date().getTime(), resp.pidval);
         avgpid.append(new Date().getTime(), resp.avgpid);
-        $("#curtemp").html(resp.tempf.toFixed(2));
+        $("#curtemp").html(resp.tempc.toFixed(2));
         $("#pterm").html(resp.pterm.toFixed(2));
         $("#iterm").html(resp.iterm.toFixed(2));
         $("#dterm").html(resp.dterm.toFixed(2));

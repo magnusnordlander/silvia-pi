@@ -25,7 +25,7 @@
       </div>
       <div class="row">
         <div class="col-xs-12">
-          <h5 class="text-right">Current Temp: <span id="curtemp">00.00</span> °F</h5>
+          <h5 class="text-right">Current Temp: <span id="curtemp">00.00</span> °C</h5>
         </div>
       </div>
       <hr>
@@ -36,22 +36,12 @@
               <label for="inputSetTemp">Brew Temp: </label>
               <div class="input-group" style="width:115px">
                 <input type="number" class="form-control" id="inputSetTemp">
-                <div class="input-group-addon">°F</div>
+                <div class="input-group-addon">°C</div>
               </div>
             </div>
          </form>
        </div>
         <div class="col-xs-6">
-          <form class="form-inline" onsubmit="return false">
-            <div class="form-group">
-              <label id="labelWake" for="inputWake">Wakeup: </label>
-              <input type="time" class="form-control" id="inputWake" style="width:120px">
-              <label id="labelSleep" for="inputSleep">Sleep: </label>
-              <input type="time" class="form-control" id="inputSleep" style="width:120px">
-              <button id="btnTimerDisable" class="btn btn-danger" style="display:none">Disable Timer</button>
-              <button id="btnTimerEnable" class="btn btn-primary" style="display:none">Enable Timer</button>
-            </div>
-          </form>
         </div>
         <div class="col-xs-2">
           <form class="form-inline" onsubmit="return false">
