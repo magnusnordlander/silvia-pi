@@ -234,6 +234,7 @@ def rest_server(dummy,state):
 
 def mqtt_subscribe_loop(dummy, state):
   import paho.mqtt.client as mqtt
+  from distutils.util import strtobool
   def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
@@ -243,13 +244,13 @@ def mqtt_subscribe_loop(dummy, state):
 
   # The callback for when a PUBLISH message is received from the server.
   def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
     if msg.topic == "silvia/settemp/set":
       state['settemp'] = float(msg.payload)
       client.publish("silvia/settemp", state['settemp'])
     elif msg.topic == "silvia/is_awake/set":
-      state['is_awake'] = bool(distutils.util.strtobool(msg.payload))
+      state['is_awake'] = bool(strtobool(msg.payload))
       client.publish("silvia/is_awake", state['is_awake'])
-    print(msg.topic+" "+str(msg.payload))
 
   client = mqtt.Client()
   client.on_connect = on_connect
