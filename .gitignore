@@ -1,7 +1,6 @@
 silvia-pi.log*
 *.log
 *.pyc
-PID.*
 kill.sh
 restart.sh
 *.debug.js
