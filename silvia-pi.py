@@ -239,7 +239,8 @@ def mqtt_subscribe_loop(dummy, state):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("$SYS/#")
+    client.subscribe("silvia/settemp/set")
+    client.subscribe("silvia/is_awake/set")
 
   # The callback for when a PUBLISH message is received from the server.
   def on_message(client, userdata, msg):
@@ -272,6 +273,17 @@ def mqtt_publish_loop(dummy, state):
       client.publish("silvia/temperature", pidstate['avgtemp'])
     else:
       client.publish("silvia/temperature", "N/A")
+
+    if "settemp" in pidstate:
+      client.publish("silvia/settemp", pidstate['settemp'])
+    else:
+      client.publish("silvia/settemp", "N/A")
+
+    if "is_awake" in pidstate:
+      client.publish("silvia/is_awake", pidstate['is_awake'])
+    else:
+      client.publish("silvia/is_awake", "N/A")
+
     sleep(10)
 
 if __name__ == '__main__':
@@ -307,6 +319,11 @@ if __name__ == '__main__':
   mp.daemon = True
   mp.start()
 
+  print("Starting MQTT Subscribe thread...")
+  ms = Process(target=mqtt_subscribe_loop,args=(1,pidstate))
+  ms.daemon = True
+  ms.start()
+
   #Start Watchdog loop
   print("Starting Watchdog...")
   piderr = 0
@@ -317,8 +334,8 @@ if __name__ == '__main__':
   lasti = pidstate['i']
   sleep(1)
 
-  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive(), mp.is_alive())
-  while p.is_alive() and h.is_alive() and r.is_alive() and mp.is_alive():
+  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive(), mp.is_alive(), ms.is_alive())
+  while p.is_alive() and h.is_alive() and r.is_alive() and mp.is_alive() and ms.is_alive():
     curi = pidstate['i']
     if curi == lasti :
       piderr = piderr + 1
