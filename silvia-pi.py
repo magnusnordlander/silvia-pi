@@ -268,7 +268,10 @@ def mqtt_publish_loop(dummy, state):
   client.connect("192.168.10.66", 1883, 60)
 
   while True:
-    client.publish("silvia/temperature", pidstate['avgtemp'])
+    if "avgtemp" in pidstate:
+      client.publish("silvia/temperature", pidstate['avgtemp'])
+    else:
+      client.publish("silvia/temperature", "N/A")
     sleep(10)
 
 if __name__ == '__main__':
