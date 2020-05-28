@@ -6,10 +6,10 @@ def scheduler(dummy,state):
   import schedule
   from datetime import datetime
 
-  sys.stdout = open("scheduler.log", "a", buffering=0)
-  sys.stderr = open("scheduler.err.log", "a", buffering=0)
+  sys.stdout = open("scheduler.log", "a")
+  sys.stderr = open("scheduler.err.log", "a")
 
-  print "Starting scheduler thread ..."
+  print("Starting scheduler thread ...")
 
   last_wake = 0
   last_sleep = 0
@@ -102,18 +102,24 @@ def pid_loop(dummy,state):
   import sys
   from time import sleep, time
   from math import isnan
-  import Adafruit_GPIO.SPI as SPI
-  import Adafruit_MAX31855.MAX31855 as MAX31855
+  import board
+  import busio
+  import digitalio
+  import adafruit_max31855
   import PID as PID
   import config as conf
 
-  sys.stdout = open("pid.log", "a", buffering=0)
-  sys.stderr = open("pid.err.log", "a", buffering=0)
+  sys.stdout = open("pid.log", "a")
+  sys.stderr = open("pid.err.log2", "a")
 
   def c_to_f(c):
     return c * 9.0 / 5.0 + 32.0
 
-  sensor = MAX31855.MAX31855(spi=SPI.SpiDev(conf.spi_port, conf.spi_dev))
+  spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+  cs = digitalio.DigitalInOut(board.D0)
+  sensor = adafruit_max31855.MAX31855(spi, cs)
+
+  print("got sensor:", sensor)
 
   pid = PID.PID(conf.Pc,conf.Ic,conf.Dc)
   pid.SetPoint = state['settemp']
@@ -136,7 +142,7 @@ def pid_loop(dummy,state):
 
   try:
     while True : # Loops 10x/second
-      tempc = sensor.readTempC()
+      tempc = sensor.temperature
       if isnan(tempc) :
         nanct += 1
         if nanct > 100000 :
@@ -174,7 +180,7 @@ def pid_loop(dummy,state):
       if i%10 == 0 :
         pid.update(avgtemp)
         pidout = pid.output
-        pidhist[i/10%10] = pidout
+        pidhist[int(i/10%10)] = pidout
         avgpid = sum(pidhist)/len(pidhist)
 
       state['i'] = i
@@ -191,7 +197,7 @@ def pid_loop(dummy,state):
         state['dterm'] = round(pid.DTerm * conf.Dw,2)
       state['iscold'] = iscold
 
-      print time(), state
+      print(time(), state)
 
       sleeptime = lasttime+conf.sample_time-time()
       if sleeptime < 0 :
@@ -211,9 +217,10 @@ def rest_server(dummy,state):
   import os
 
   basedir = os.path.dirname(__file__)
-  wwwdir = basedir+'/www/'
+  #wwwdir = basedir+'/www/'
+  wwwdir = "/home/pi/silvia-pi/www"
 
-  @route('/')
+  @route('/home')
   def docroot():
     return static_file('index.html',wwwdir)
 
@@ -299,7 +306,7 @@ def rest_server(dummy,state):
 if __name__ == '__main__':
   from multiprocessing import Process, Manager
   from time import sleep
-  from urllib2 import urlopen
+  from urllib.request import urlopen
   import config as conf
 
   manager = Manager()
@@ -312,28 +319,28 @@ if __name__ == '__main__':
   pidstate['settemp'] = conf.set_temp
   pidstate['avgpid'] = 0.
 
-  print "Starting Scheduler thread..."
+  print("Starting Scheduler thread...")
   s = Process(target=scheduler,args=(1,pidstate))
   s.daemon = True
   s.start()
 
-  print "Starting PID thread..."
+  print("Starting PID thread...")
   p = Process(target=pid_loop,args=(1,pidstate))
   p.daemon = True
   p.start()
 
-  print "Starting HE Control thread..."
+  print("Starting HE Control thread...")
   h = Process(target=he_control_loop,args=(1,pidstate))
   h.daemon = True
   h.start()
 
-  print "Starting REST Server thread..."
+  print("Starting REST Server thread...")
   r = Process(target=rest_server,args=(1,pidstate))
   r.daemon = True
   r.start()
 
   #Start Watchdog loop
-  print "Starting Watchdog..."
+  print("Starting Watchdog...")
   piderr = 0
   weberr = 0
   weberrflag = 0
@@ -342,6 +349,7 @@ if __name__ == '__main__':
   lasti = pidstate['i']
   sleep(1)
 
+  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive(), s.is_alive())
   while p.is_alive() and h.is_alive() and r.is_alive() and s.is_alive():
     curi = pidstate['i']
     if curi == lasti :
@@ -352,7 +360,7 @@ if __name__ == '__main__':
     lasti = curi
 
     if piderr > 9 :
-      print 'ERROR IN PID THREAD, RESTARTING'
+      print('ERROR IN PID THREAD, RESTARTING')
       p.terminate()
 
     try:
@@ -367,7 +375,7 @@ if __name__ == '__main__':
       weberr = weberr + 1
 
     if weberr > 9 :
-      print 'ERROR IN WEB SERVER THREAD, RESTARTING'
+      print('ERROR IN WEB SERVER THREAD, RESTARTING')
       r.terminate()
 
     weberrflag = 0
