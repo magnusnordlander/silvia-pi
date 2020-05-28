@@ -13,10 +13,12 @@ def init_heat():
 
 def heat_on():
   import RPi.GPIO as GPIO
+  print("Heat on")
   GPIO.output(conf.he_pin,1)
 
 def heat_off():
   import RPi.GPIO as GPIO
+  print("Heat off")
   GPIO.output(conf.he_pin,0)
 
 def cleanup_heat():
@@ -83,8 +85,8 @@ def pid_loop(dummy,state):
   import PID as PID
   import config as conf
 
-  sys.stdout = open("pid.log", "a")
-  sys.stderr = open("pid.err.log2", "a")
+#  sys.stdout = open("pid.log", "a")
+#  sys.stderr = open("pid.err.log2", "a")
 
   sensor = init_temp()
 
