@@ -239,7 +239,7 @@ def mqtt_subscribe_loop(dummy, state):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("silvia/#/set")
+    client.subscribe([("silvia/settemp/set", 0), ("silvia/settemp/set", 0)])
 
   # The callback for when a PUBLISH message is received from the server.
   def on_message(client, userdata, msg):
