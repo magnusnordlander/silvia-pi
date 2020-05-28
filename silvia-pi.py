@@ -7,21 +7,24 @@ def gotosleep(dummy,state):
   state['is_awake'] = False
 
 def init_heat():
+  import RPi.GPIO as GPIO
   GPIO.setmode(GPIO.BCM)
   GPIO.setup(conf.he_pin, GPIO.OUT)
 
 def heat_on():
+  import RPi.GPIO as GPIO
   GPIO.output(conf.he_pin,1)
 
 def heat_off():
+  import RPi.GPIO as GPIO
   GPIO.output(conf.he_pin,0)
 
 def cleanup_heat():
+  import RPi.GPIO as GPIO
   GPIO.cleanup()
 
 def he_control_loop(dummy,state):
   from time import sleep
-  import RPi.GPIO as GPIO
   import config as conf
 
   init_heat()
@@ -77,10 +80,6 @@ def pid_loop(dummy,state):
   import sys
   from time import sleep, time
   from math import isnan
-  import board
-  import busio
-  import digitalio
-  import adafruit_max31855
   import PID as PID
   import config as conf
 
@@ -269,8 +268,8 @@ if __name__ == '__main__':
   lasti = pidstate['i']
   sleep(1)
 
-  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive(), s.is_alive())
-  while p.is_alive() and h.is_alive() and r.is_alive() and s.is_alive():
+  print("Starting loop...", p.is_alive(), h.is_alive(), r.is_alive())
+  while p.is_alive() and h.is_alive() and r.is_alive():
     curi = pidstate['i']
     if curi == lasti :
       piderr = piderr + 1
