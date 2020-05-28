@@ -244,7 +244,10 @@ def mqtt_subscribe_loop(dummy, state):
 
   # The callback for when a PUBLISH message is received from the server.
   def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload))
+    if msg.topic == "silvia/settemp/set":
+      state['settemp'] = float(msg.payload)
+    elif msg.topic == "silvia/is_awake/set":
+      state['is_awake'] = bool(distutils.util.strtobool(msg.payload))
 
   client = mqtt.Client()
   client.on_connect = on_connect
