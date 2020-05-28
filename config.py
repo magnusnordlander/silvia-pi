@@ -8,12 +8,7 @@ spi_dev = 0
 he_pin = 26
 
 # Default goal temperature
-set_temp = 221.
-
-# Default sleep/wake times
-sched_enabled = True
-wake_time = '06:30'
-sleep_time = '10:00'
+set_temp = 95.
 
 # Main loop sample rate in seconds
 sample_time = 0.1

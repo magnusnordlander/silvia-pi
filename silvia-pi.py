@@ -1,71 +1,31 @@
 #!/usr/bin/python
 
-def scheduler(dummy,state):
-  import time
-  import sys
-  import schedule
-  from datetime import datetime
-
-  sys.stdout = open("scheduler.log", "a")
-  sys.stderr = open("scheduler.err.log", "a")
-
-  print("Starting scheduler thread ...")
-
-  last_wake = 0
-  last_sleep = 0
-  last_sched_switch = 0
-
-  while True:
-
-    if last_wake != state['wake_time'] or last_sleep != state['sleep_time'] or last_sched_switch != state['sched_enabled']:
-      schedule.clear()
-
-      if state['sched_enabled'] == True:
-        schedule.every().day.at(state['sleep_time']).do(gotosleep,1,state)
-        schedule.every().day.at(state['wake_time']).do(wakeup,1,state)
-
-        nowtm = float(datetime.now().hour) + float(datetime.now().minute)/60.
-        sleeptm = state['sleep_time'].split(":")
-        sleeptm = float(sleeptm[0]) + float(sleeptm[1])/60.
-        waketm = state['wake_time'].split(":")
-        waketm = float(waketm[0]) + float(waketm[1])/60.
-
-        if waketm < sleeptm:
-          if nowtm >= waketm and nowtm < sleeptm:
-            wakeup(1,state)
-          else:
-            gotosleep(1,state)
-        elif waketm > sleeptm:
-          if nowtm < waketm and nowtm >= sleeptm:
-            gotosleep(1,state)
-          else:
-            wakeup(1,state)
-
-      else:
-        wakeup(1,state)
-
-    last_wake = state['wake_time']
-    last_sleep = state['sleep_time']
-    last_sched_switch = state['sched_enabled']
-
-    schedule.run_pending()
-
-    time.sleep(1)
-
 def wakeup(dummy,state):
   state['is_awake'] = True
 
 def gotosleep(dummy,state):
   state['is_awake'] = False
 
+def init_heat():
+  GPIO.setmode(GPIO.BCM)
+  GPIO.setup(conf.he_pin, GPIO.OUT)
+
+def heat_on():
+  GPIO.output(conf.he_pin,1)
+
+def heat_off():
+  GPIO.output(conf.he_pin,0)
+
+def cleanup_heat():
+  GPIO.cleanup()
+
 def he_control_loop(dummy,state):
   from time import sleep
   import RPi.GPIO as GPIO
   import config as conf
 
-  GPIO.setmode(GPIO.BCM)
-  GPIO.setup(conf.he_pin, GPIO.OUT)
-  GPIO.output(conf.he_pin,0)
+  init_heat()
+  heat_off()
 
   heating = False
 
@@ -75,28 +35,43 @@ def he_control_loop(dummy,state):
 
       if state['is_awake'] == False :
         state['heating'] = False
-        GPIO.output(conf.he_pin,0)
+        heat_off()
         sleep(1)
       else:
         if avgpid >= 100 :
           state['heating'] = True
-          GPIO.output(conf.he_pin,1)
+          heat_on()
           sleep(1)
         elif avgpid > 0 and avgpid < 100:
           state['heating'] = True
-          GPIO.output(conf.he_pin,1)
+          heat_on()
           sleep(avgpid/100.)
-          GPIO.output(conf.he_pin,0)
+          heat_off()
           sleep(1-(avgpid/100.))
           state['heating'] = False
         else:
-          GPIO.output(conf.he_pin,0)
+          heat_off()
           state['heating'] = False
           sleep(1)
 
   finally:
-    GPIO.output(conf.he_pin,0)
-    GPIO.cleanup()
+    heat_off()
+    cleanup_heat()
+
+def init_temp():
+  import board
+  import busio
+  import digitalio
+  
+  import adafruit_max31865
+  # Initialize SPI bus and sensor.
+  spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
+  cs = digitalio.DigitalInOut(board.D5)  # Chip select of the MAX31865 board.
+  sensor = adafruit_max31865.MAX31865(spi, cs, rtd_nominal=100.5, wires=2)
+  return sensor
+
+def get_temp_c(sensor):
+  return sensor.temperature
 
 def pid_loop(dummy,state):
   import sys
@@ -112,12 +87,7 @@ def pid_loop(dummy,state):
   sys.stdout = open("pid.log", "a")
   sys.stderr = open("pid.err.log2", "a")
 
-  def c_to_f(c):
-    return c * 9.0 / 5.0 + 32.0
-
-  spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-  cs = digitalio.DigitalInOut(board.D0)
-  sensor = adafruit_max31855.MAX31855(spi, cs)
+  sensor = init_temp()
 
   print("got sensor:", sensor)
 
@@ -142,7 +112,7 @@ def pid_loop(dummy,state):
 
   try:
     while True : # Loops 10x/second
-      tempc = sensor.temperature
+      tempc = get_temp_c(sensor)
       if isnan(tempc) :
         nanct += 1
         if nanct > 100000 :
@@ -151,14 +121,13 @@ def pid_loop(dummy,state):
       else:
         nanct = 0
 
-      tempf = c_to_f(tempc)
-      temphist[i%5] = tempf
+      temphist[i%5] = tempc
       avgtemp = sum(temphist)/len(temphist)
 
-      if avgtemp < 100 :
+      if avgtemp < 40 :
         lastcold = i
 
-      if avgtemp > 200 :
+      if avgtemp > 90 :
         lastwarm = i
 
       if iscold and (i-lastcold)*conf.sample_time > 60*15 :
@@ -184,7 +153,7 @@ def pid_loop(dummy,state):
         avgpid = sum(pidhist)/len(pidhist)
 
       state['i'] = i
-      state['tempf'] = round(tempf,2)
+      state['tempc'] = round(tempc,2)
       state['avgtemp'] = round(avgtemp,2)
       state['pidval'] = round(pidout,2)
       state['avgpid'] = round(avgpid,2)
@@ -240,11 +209,11 @@ def rest_server(dummy,state):
   def post_settemp():
     try:
       settemp = float(request.forms.get('settemp'))
-      if settemp >= 200 and settemp <= 260 :
+      if settemp >= 90 and settemp <= 125 :
         state['settemp'] = settemp
         return str(settemp)
       else:
-        abort(400,'Set temp out of range 200-260.')
+        abort(400,'Set temp out of range 90-125.')
     except:
       abort(400,'Invalid number for set temp.')
 
@@ -252,50 +221,9 @@ def rest_server(dummy,state):
   def get_is_awake():
     return str(state['is_awake'])
 
-  @post('/scheduler')
-  def set_sched():
-    sched = request.forms.get('scheduler')
-    if sched == "True":
-      state['sched_enabled'] = True
-    elif sched == "False":
-      state['sched_enabled'] = False
-      state['is_awake'] = True
-    else:
-      abort(400,'Invalid scheduler setting. Expecting True or False')
-
-  @post('/setwake')
-  def set_wake():
-    wake = request.forms.get('wake')
-    try:
-      datetime.strptime(wake,'%H:%M')
-    except:
-      abort(400,'Invalid time format.')
-    state['wake_time'] = wake
-    return str(wake)
-
-  @post('/setsleep')
-  def set_sleep():
-    sleep = request.forms.get('sleep')
-    try:
-      datetime.strptime(sleep,'%H:%M')
-    except:
-      abort(400,'Invalid time format.')
-    state['sleep_time'] = sleep
-    return str(sleep)
-
   @get('/allstats')
   def allstats():
     return dict(state)
-
-  @route('/restart')
-  def restart():
-    call(["reboot"])
-    return '';
-
-  @route('/shutdown')
-  def shutdown():
-    call(["shutdown","-h","now"])
-    return '';
 
   @get('/healthcheck')
   def healthcheck():
