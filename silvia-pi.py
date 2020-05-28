@@ -240,17 +240,9 @@ if __name__ == '__main__':
   manager = Manager()
   pidstate = manager.dict()
   pidstate['is_awake'] = True
-  pidstate['sched_enabled'] = conf.sched_enabled
-  pidstate['sleep_time'] = conf.sleep_time
-  pidstate['wake_time'] = conf.wake_time
   pidstate['i'] = 0
   pidstate['settemp'] = conf.set_temp
   pidstate['avgpid'] = 0.
-
-  print("Starting Scheduler thread...")
-  s = Process(target=scheduler,args=(1,pidstate))
-  s.daemon = True
-  s.start()
 
   print("Starting PID thread...")
   p = Process(target=pid_loop,args=(1,pidstate))
