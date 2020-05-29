@@ -14,15 +14,14 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
    * Adafruit MCP4725 for control
 
 ### Done
-None
-
-### Upcoming (in order of implementation)
 * Remove scheduling
    * I'd rather do scheduling via MQTT through Home Assistant
 * Switch to Celsius
 * Use a MAX31865 temperature sensor
-* Steam temperature control
 * MQTT publishing and control
+
+### Upcoming (in order of implementation)
+* Steam temperature control
 * Digital controls
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
    * Proportional relay for the boiler
