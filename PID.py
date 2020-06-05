@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # title           :PID.py
-# description     :python pid controller
+# description     :python pid process
 # author          :Caner Durmusoglu
 # date            :20151218
 # version         :0.1
@@ -112,7 +112,7 @@ class PID:
 
     def setWindup(self, windup):
         """Integral windup, also known as integrator windup or reset windup,
-        refers to the situation in a PID feedback controller where
+        refers to the situation in a PID feedback process where
         a large change in setpoint occurs (say a positive change)
         and the integral terms accumulates a significant error
         during the rise (windup), thus overshooting and continuing
