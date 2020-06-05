@@ -24,10 +24,9 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
 * Steam temperature control
 * Digital controls
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
-   * Proportional relay for the boiler
+* Preinfusion
 * Smart scale integration
     * Probably a Decent Scale
-* Preinfusion
 
 ### If I feel like it
 * Pressure gauge
