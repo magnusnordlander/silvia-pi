@@ -31,7 +31,7 @@ class EmulatedBoiler(object):
             now = time.time_ns()
             diff = now - self.last_heat_start
 
-            self.sensor.add_energy(diff/1000000000)
+            self.sensor.add_energy(diff/200000000)
             self.last_heat_start = now
         else:
             self.sensor.add_energy(-2)

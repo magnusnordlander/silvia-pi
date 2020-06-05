@@ -5,7 +5,7 @@ from multiprocessing import Manager
 from time import sleep
 import os
 import config as conf
-from process import HeatingElementControllerProcess, SimplePidProcess, MqttProcess, RestServerProcess, GPLPidprocess
+from process import HeatingElementControllerProcess, SimplePidProcess, MqttProcess, RestServerProcess, SteamControlProcess
 import boiler
 import temperature_sensor
 
@@ -75,6 +75,7 @@ if __name__ == '__main__':
     pidstate['i'] = 0
     pidstate['settemp'] = conf.set_temp
     pidstate['avgpid'] = 0.
+    pidstate['steam_mode'] = False
 
 
     sensor = temperature_sensor.EmulatedSensor(pidstate)
@@ -83,11 +84,11 @@ if __name__ == '__main__':
 
     processes = {
         'PID': SimplePidProcess(pidstate, sensor, conf),
-#        'PID': GPLPidprocess(pidstate, sensor, conf),
+        'SteamControl': SteamControlProcess(pidstate, sensor, conf),
         'HeatingElement': HeatingElementControllerProcess(pidstate, boiler),
 #        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
-#        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server="192.168.10.66", prefix="fakesilvia"),
-#        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server="192.168.10.66", prefix="fakesilvia")
+        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server="192.168.10.66", prefix="fakesilvia"),
+        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server="192.168.10.66", prefix="fakesilvia")
     }
 
     watchdog = Watchdog(pidstate, processes)

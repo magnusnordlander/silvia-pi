@@ -19,7 +19,7 @@ class MqttSubscribeProcess(Process):
 
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
-            client.subscribe([(self.prefix+"/settemp/set", 0), (self.prefix+"/is_awake/set", 0)])
+            client.subscribe([(self.prefix+"/settemp/set", 0), (self.prefix+"/is_awake/set", 0), (self.prefix+"/steam_mode/set", 0)])
 
         # The callback for when a PUBLISH message is received from the server.
         def on_message(client, userdata, msg):
@@ -30,6 +30,10 @@ class MqttSubscribeProcess(Process):
             elif msg.topic == self.prefix+"/is_awake/set":
                 state['is_awake'] = msg.payload == b'True'
                 client.publish(self.prefix+"/is_awake", state['is_awake'])
+            elif msg.topic == self.prefix+"/steam_mode/set":
+                state['steam_mode'] = msg.payload == b'True'
+                client.publish(self.prefix+"/steam_mode", state['steam_mode'])
+
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -73,6 +77,11 @@ class MqttPublishProcess(Process):
                 client.publish(self.prefix+"/settemp", state['settemp'])
             else:
                 client.publish(self.prefix+"/settemp", "N/A")
+
+            if "steam_mode" in state:
+                client.publish(self.prefix+"/steam_mode", state['steam_mode'])
+            else:
+                client.publish(self.prefix+"/steam_mode", "N/A")
 
             if "is_awake" in state:
                 client.publish(self.prefix+"/is_awake", state['is_awake'])

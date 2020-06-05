@@ -19,7 +19,7 @@ class SimplePidProcess(Process):
         sensor = self.temperature_sensor
 
         pid = simple_pid.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], output_limits=(-20, 20))
-        pid.sample_time = conf.sample_time
+        pid.sample_time = conf.sample_time*5
 
         nanct=0
         i=0
