@@ -11,9 +11,9 @@ try:
     import board
 
     temp_sensor_cs_pin = board.D5
-    he_pin = board.D18
-    solenoid_pin = board.D14
-    brew_button_pin = board.D21
+    he_pin = 18
+    solenoid_pin = 14
+    brew_button_pin = 21
 except NotImplementedError:
     temp_sensor_cs_pin = None
     he_pin = None
