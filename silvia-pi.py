@@ -88,11 +88,11 @@ if __name__ == '__main__':
         pump = pump.EmulatedPump()
 
     processes = {
-        'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, conf.sample_time, 10),
-        'PID': process.SimplePidProcess(pidstate, conf.sample_time * 10, conf),
-        'SteamControl': process.SteamControlProcess(pidstate, conf.sample_time * 10, conf.steam_low_temp, conf.steam_high_temp),
+        'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, conf.fast_sample_time, conf.factor),
+        'PID': process.SimplePidProcess(pidstate, conf.slow_sample_time, conf),
+        'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time * 10, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
-        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.sample_time),
+        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.fast_sample_time),
         'RestServer': process.RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
         'MQTTPublisher': process.MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
         'MQTTSubscriber': process.MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
