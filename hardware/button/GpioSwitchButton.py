@@ -18,5 +18,5 @@ class GpioSwitchButton(object):
         return GPIO.input(self.control_pin) == GPIO.HIGH
 
     def cleanup(self):
-        print("Cleaning up GPIO Switch Button "+self.control_pin)
+        print("Cleaning up GPIO Switch Button "+str(self.control_pin))
         GPIO.cleanup()
