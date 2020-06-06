@@ -6,28 +6,22 @@ from multiprocessing import Process
 
 
 class SimplePidProcess(Process):
-    def __init__(self, state, temperature_sensor, conf):
+    def __init__(self, state, conf):
         super(SimplePidProcess, self).__init__()
 
-        self.temperature_sensor = temperature_sensor
         self.state = state
         self.conf = conf
 
     def run(self):
         conf = self.conf
         state = self.state
-        sensor = self.temperature_sensor
 
         pid = simple_pid.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], output_limits=(-20, 20))
         pid.sample_time = conf.sample_time*5
 
-        nanct=0
         i=0
-        j=0
         pidhist = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
         avgpid = 0.
-        temphist = [0.,0.,0.,0.,0.]
-        avgtemp = 0.
         lastsettemp = state['settemp']
         lasttime = time()
         sleeptime = 0
@@ -38,17 +32,7 @@ class SimplePidProcess(Process):
 
         try:
             while True:  # Loops 10x/second
-                tempc = sensor.get_temp_c()
-                if isnan(tempc):
-                    nanct += 1
-                    if nanct > 100000:
-                        sys.exit()
-                    continue
-                else:
-                    nanct = 0
-
-                temphist[i%5] = tempc
-                avgtemp = sum(temphist)/len(temphist)
+                avgtemp = self.state['avgtemp']
 
                 if avgtemp < 40:
                     lastcold = i
@@ -80,16 +64,12 @@ class SimplePidProcess(Process):
                     avgpid = sum(pidhist)/len(pidhist)
 
                 state['i'] = i
-                state['tempc'] = round(tempc, 2)
-                state['avgtemp'] = round(avgtemp, 2)
                 state['pidval'] = round(pidout, 2)
                 state['avgpid'] = round(avgpid, 2)
                 state['pterm'] = round(pid._proportional, 2)
                 state['iterm'] = round(pid._integral, 2)
                 state['dterm'] = round(pid._derivative, 2)
                 state['iscold'] = iscold
-
-                print(state)
 
                 sleeptime = lasttime+conf.sample_time-time()
                 if sleeptime < 0:

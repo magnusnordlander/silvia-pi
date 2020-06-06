@@ -33,8 +33,6 @@ class EmulatedBoiler(object):
 
             self.sensor.add_energy(diff/200000000)
             self.last_heat_start = now
-        else:
-            self.sensor.add_energy(-2)
 
     def cleanup(self):
         print("Cleaning up")

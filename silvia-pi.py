@@ -5,7 +5,7 @@ from multiprocessing import Manager
 from time import sleep
 import os
 import config as conf
-from process import HeatingElementControllerProcess, SimplePidProcess, MqttProcess, RestServerProcess, SteamControlProcess
+from process import HeatingElementControllerProcess, SimplePidProcess, MqttProcess, RestServerProcess, SteamControlProcess, SensorReaderProcess
 import boiler
 import temperature_sensor
 
@@ -73,8 +73,8 @@ if __name__ == '__main__':
     pidstate['steam_mode'] = False
 
 
-    # sensor = temperature_sensor.EmulatedSensor(pidstate)
-    # boiler = boiler.EmulatedBoiler(sensor)
+#    sensor = temperature_sensor.EmulatedSensor(pidstate)
+#    boiler = boiler.EmulatedBoiler(sensor)
 
     boiler = boiler.GpioBoiler(conf.he_pin)
 
@@ -82,12 +82,13 @@ if __name__ == '__main__':
     sensor = temperature_sensor.Max31865Sensor(board.D5, rtd_nominal=100.5)
 
     processes = {
-        'PID': SimplePidProcess(pidstate, sensor, conf),
-        'SteamControl': SteamControlProcess(pidstate, sensor, conf.sample_time, conf.steam_low_temp, conf.steam_high_temp),
+        'SensorReader': SensorReaderProcess(pidstate, sensor, conf.sample_time),
+        'PID': SimplePidProcess(pidstate, conf),
+        'SteamControl': SteamControlProcess(pidstate, conf.sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': HeatingElementControllerProcess(pidstate, boiler),
-        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
-        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
-        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
+#        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
+#        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
+#        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
     }
 
     watchdog = Watchdog(pidstate, processes)
