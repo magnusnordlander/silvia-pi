@@ -16,6 +16,7 @@ class InputReaderProcess(Process):
     def run(self):
         temphist = [0.,0.,0.,0.,0.]
         i=0
+        j=0
         lasttime = time()
 
         while True:
@@ -31,9 +32,10 @@ class InputReaderProcess(Process):
                 else:
                     nanct = 0
 
-                temphist[i % 5] = tempc
+                temphist[j % 5] = tempc
                 self.state['tempc'] = round(tempc, 2)
                 self.state['avgtemp'] = round(sum(temphist) / len(temphist), 2)
+                j += 1
 
             sleeptime = lasttime + self.sample_time - time()
             if sleeptime < 0:
