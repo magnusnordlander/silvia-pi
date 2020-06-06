@@ -24,4 +24,5 @@ class GpioBoiler(object):
 
   def cleanup(self):
     print("Cleaning up GPIO boiler " + str(self.control_pin))
+    GPIO.output(self.control_pin, 0)
     GPIO.cleanup()
