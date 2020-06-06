@@ -4,3 +4,5 @@ silvia-pi.log*
 kill.sh
 restart.sh
 *.debug.js
+.idea
+venv
