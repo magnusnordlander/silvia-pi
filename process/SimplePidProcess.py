@@ -1,7 +1,7 @@
 import sys
 from time import sleep, time
 from math import isnan
-import simple_pid
+import simple_pid_fork
 from multiprocessing import Process
 
 
@@ -16,7 +16,7 @@ class SimplePidProcess(Process):
         conf = self.conf
         state = self.state
 
-        pid = simple_pid.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], output_limits=(-20, 20))
+        pid = simple_pid_fork.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], windup_limits=(-20, 20))
         pid.sample_time = conf.sample_time*5
 
         i=0

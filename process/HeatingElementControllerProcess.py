@@ -27,16 +27,16 @@ class HeatingElementControllerProcess(Process):
                         self.boiler.heat_off()
                         sleep(1)
                     else:
-                        if avgpid >= 20:
+                        if avgpid >= 100:
                             self.state['heating'] = True
                             self.boiler.heat_on()
                             sleep(1)
-                        elif avgpid > 0 and avgpid < 20:
+                        elif avgpid > 0 and avgpid < 100:
                             self.state['heating'] = True
                             self.boiler.heat_on()
-                            sleep(avgpid / 20.)
+                            sleep(avgpid / 100.)
                             self.boiler.heat_off()
-                            sleep(1 - (avgpid / 20.))
+                            sleep(1 - (avgpid / 100.))
                             self.state['heating'] = False
                         else:
                             self.boiler.heat_off()
