@@ -26,6 +26,10 @@ class SteamControlProcess(Process):
         while True:  # Loops 10x/second
             avgtemp = self.state['avgtemp']
 
+            if avgtemp is None:
+                sleep(1)
+                continue
+
             if j % 10 == 0:
                 if avgtemp < steam_low_temp:
                     state['steam_element_on'] = True

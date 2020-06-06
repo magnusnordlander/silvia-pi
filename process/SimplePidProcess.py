@@ -34,6 +34,10 @@ class SimplePidProcess(Process):
             while True:  # Loops 10x/second
                 avgtemp = self.state['avgtemp']
 
+                if avgtemp is None:
+                    sleep(1)
+                    continue
+
                 if avgtemp < 40:
                     lastcold = i
 

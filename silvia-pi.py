@@ -69,6 +69,7 @@ if __name__ == '__main__':
     pidstate['is_awake'] = True
     pidstate['i'] = 0
     pidstate['settemp'] = conf.set_temp
+    pidstate['avgtemp'] = None
     pidstate['avgpid'] = 0.
     pidstate['steam_mode'] = False
 
