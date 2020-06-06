@@ -73,24 +73,29 @@ if __name__ == '__main__':
     pidstate['avgtemp'] = None
     pidstate['avgpid'] = 0.
     pidstate['steam_mode'] = False
+    pidstate['ignore_buttons'] = False
 
     if conf.test_hardware:
         sensor = temperature_sensor.EmulatedSensor(pidstate)
         boiler = boiler.EmulatedBoiler(sensor)
         brew_button = button.EmulatedRandomButton()
+        steam_button = button.EmulatedRandomButton()
+        water_button = button.EmulatedRandomButton()
         solenoid = solenoid.EmulatedSolenoid()
         pump = pump.EmulatedPump()
     else:
         boiler = boiler.GpioBoiler(conf.he_pin)
         sensor = temperature_sensor.Max31865Sensor(conf.temp_sensor_cs_pin, rtd_nominal=100.5)
         brew_button = button.GpioSwitchButton(conf.brew_button_pin)
+        steam_button = button.GpioSwitchButton(conf.steam_button_pin)
+        water_button = button.GpioSwitchButton(conf.water_button_pin)
         solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
         pump = pump.EmulatedPump()
 
     processes = {
-        'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, conf.fast_sample_time, conf.factor),
+        'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, steam_button, water_button, conf.fast_sample_time, conf.factor),
         'PID': process.SimplePidProcess(pidstate, conf.slow_sample_time, conf),
-        'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time * 10, conf.steam_low_temp, conf.steam_high_temp),
+        'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
         'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.fast_sample_time),
         'RestServer': process.RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),

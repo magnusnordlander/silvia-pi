@@ -17,22 +17,25 @@ class BrewControlProcess(Process):
         lasttime = time()
 
         self.state['brewing'] = False
+        prev_brew_state = False
 
         while True:
-            if not self.state['brewing'] and self.state['brew_button']:
-                print("Starting brew")
+            if not self.state['ignore_buttons']:
+                self.state['steam_mode'] = self.state['steam_button']
 
-                self.state['brewing'] = True
+                if not self.state['brewing'] and self.state['brew_button']:
+                    print("Button says start brew")
+                    self.state['brewing'] = True
+                elif self.state['brewing'] and not self.state['brew_button']:
+                    print("Button says stop brew")
+                    self.state['brewing'] = False
 
-                self.solenoid.open()
-                self.pump.start_pumping()
-            elif self.state['brewing'] and not self.state['brew_button']:
-                print("Stopping brew")
-
-                self.state['brewing'] = False
-
-                self.solenoid.close()
-                self.pump.stop_pumping()
+            if prev_brew_state != self.state['brewing']:
+                if self.state['brewing']:
+                    self.start_brew()
+                else:
+                    self.stop_brew()
+                prev_brew_state = self.state['brewing']
 
             sleeptime = lasttime + self.sample_time - time()
             if sleeptime < 0:
@@ -40,3 +43,13 @@ class BrewControlProcess(Process):
             sleep(sleeptime)
             i += 1
             lasttime = time()
+
+    def start_brew(self):
+        print("Starting brew")
+        self.solenoid.open()
+        self.pump.start_pumping()
+
+    def stop_brew(self):
+        print("Stopping brew")
+        self.pump.stop_pumping()
+        self.solenoid.close()

@@ -19,21 +19,22 @@ class MqttSubscribeProcess(Process):
 
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
-            client.subscribe([(self.prefix+"/settemp/set", 0), (self.prefix+"/is_awake/set", 0), (self.prefix+"/steam_mode/set", 0)])
+            client.subscribe([
+                (self.prefix + "/settemp/set", 0),
+                (self.prefix + "/is_awake/set", 0),
+                (self.prefix + "/steam_mode/set", 0),
+                (self.prefix + "/brewing/set", 0),
+                (self.prefix + "/ignore_buttons/set", 0)
+            ])
 
         # The callback for when a PUBLISH message is received from the server.
         def on_message(client, userdata, msg):
             print(msg.topic+" "+str(msg.payload))
-            if msg.topic == self.prefix+"/settemp/set":
-                state['settemp'] = float(msg.payload)
-                client.publish(self.prefix+"/settemp", state['settemp'])
-            elif msg.topic == self.prefix+"/is_awake/set":
-                state['is_awake'] = msg.payload == b'True'
-                client.publish(self.prefix+"/is_awake", state['is_awake'])
-            elif msg.topic == self.prefix+"/steam_mode/set":
-                state['steam_mode'] = msg.payload == b'True'
-                client.publish(self.prefix+"/steam_mode", state['steam_mode'])
-
+            self.listen_for_float_change(client, 'settemp', msg)
+            self.listen_for_bool_change(client, 'is_awake', msg)
+            self.listen_for_bool_change(client, 'steam_mode', msg)
+            self.listen_for_bool_change(client, 'brewing', msg)
+            self.listen_for_bool_change(client, 'ignore_buttons', msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -47,6 +48,16 @@ class MqttSubscribeProcess(Process):
         # manual interface.
         client.loop_forever()
 
+    def listen_for_float_change(self, client, key, msg):
+        if msg.topic == self.prefix + "/" + key + "/set":
+            self.state[key] = float(msg.payload)
+            client.publish(self.prefix + "/" + key, self.state[key])
+
+    def listen_for_bool_change(self, client, key, msg):
+        if msg.topic == self.prefix + "/" + key + "/set":
+            self.state[key] = msg.payload == b'True'
+            client.publish(self.prefix + "/" + key, self.state[key])
+
 
 class MqttPublishProcess(Process):
     def __init__(self, state, server, port=1883, prefix="silvia"):
@@ -55,6 +66,15 @@ class MqttPublishProcess(Process):
         self.server = server
         self.port = port
         self.prefix = prefix
+
+        self.prev = {
+            'avgtemp': None,
+            'settemp': None,
+            'steam_mode': None,
+            'brewing': None,
+            'ignore_buttons': None,
+            'is_awake': None,
+        }
 
     def run(self):
         state = self.state
@@ -68,24 +88,19 @@ class MqttPublishProcess(Process):
         client.connect(self.server, self.port, 60)
 
         while True:
-            if "avgtemp" in state:
-                client.publish(self.prefix+"/temperature", state['avgtemp'])
-            else:
-                client.publish(self.prefix+"/temperature", "N/A")
+            self.publish(client, 'avgtemp')
+            self.publish(client, 'settemp')
+            self.publish(client, 'steam_mode')
+            self.publish(client, 'brewing')
+            self.publish(client, 'ignore_buttons')
+            self.publish(client, 'is_awake')
 
-            if "settemp" in state:
-                client.publish(self.prefix+"/settemp", state['settemp'])
-            else:
-                client.publish(self.prefix+"/settemp", "N/A")
+            sleep(5)
 
-            if "steam_mode" in state:
-                client.publish(self.prefix+"/steam_mode", state['steam_mode'])
-            else:
-                client.publish(self.prefix+"/steam_mode", "N/A")
-
-            if "is_awake" in state:
-                client.publish(self.prefix+"/is_awake", state['is_awake'])
-            else:
-                client.publish(self.prefix+"/is_awake", "N/A")
-
-            sleep(10)
+    def publish(self, client, key):
+        if key in self.state:
+            if self.state[key] != self.prev[key]:
+                client.publish(self.prefix + "/" + key, self.state[key])
+                self.prev[key] = self.state[key]
+        else:
+            client.publish(self.prefix + "/" + key, "N/A")

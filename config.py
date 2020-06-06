@@ -13,12 +13,18 @@ try:
     temp_sensor_cs_pin = board.D5
     he_pin = 18
     solenoid_pin = 14
+
     brew_button_pin = 21
+    steam_button_pin = 20
+    water_button_pin = 16
 except NotImplementedError:
     temp_sensor_cs_pin = None
     he_pin = None
     solenoid_pin = None
     brew_button_pin = None
+    steam_button_pin = None
+    water_button_pin = None
+
 
 # Default temperatures
 set_temp = 105.

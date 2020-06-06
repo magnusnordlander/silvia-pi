@@ -4,11 +4,13 @@ from math import isnan
 from multiprocessing import Process
 
 class InputReaderProcess(Process):
-    def __init__(self, state, temperature_sensor, brew_button, sample_time, temperature_factor):
+    def __init__(self, state, temperature_sensor, brew_button, steam_button, water_button, sample_time, temperature_factor):
         super(InputReaderProcess, self).__init__()
 
         self.temperature_sensor = temperature_sensor
         self.brew_button = brew_button
+        self.steam_button = steam_button
+        self.water_button = water_button
         self.sample_time = sample_time
         self.temperature_factor = temperature_factor
         self.state = state
@@ -21,6 +23,8 @@ class InputReaderProcess(Process):
 
         while True:
             self.state['brew_button'] = self.brew_button.button_state()
+            self.state['steam_button'] = self.steam_button.button_state()
+            self.state['water_button'] = self.water_button.button_state()
 
             if i % self.temperature_factor == 0:
                 tempc = self.temperature_sensor.get_temp_c()
