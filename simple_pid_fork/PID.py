@@ -67,6 +67,8 @@ class PID(object):
         self.sample_time = sample_time
 
         self._min_output, self._max_output = output_limits
+        self._min_windup, self._max_windup = windup_limits
+
         self._auto_mode = auto_mode
         self.proportional_on_measurement = proportional_on_measurement
 
@@ -208,8 +210,33 @@ class PID(object):
         self._min_output = min_output
         self._max_output = max_output
 
-        self._integral = _clamp(self._integral, self.output_limits)
         self._last_output = _clamp(self._last_output, self.output_limits)
+
+    @property
+    def windup_limits(self):
+        """
+        The current output limits as a 2-tuple: (lower, upper).
+
+        See also the *output_limts* parameter in :meth:`PID.__init__`.
+        """
+        return self._min_windup, self._max_windup
+
+    @windup_limits.setter
+    def windup_limits(self, limits):
+        """Set the windup limits."""
+        if limits is None:
+            self._min_windup, self._max_windup = None, None
+            return
+
+        min_windup, max_windup = limits
+
+        if None not in limits and max_windup < min_windup:
+            raise ValueError('lower limit must be less than upper limit')
+
+        self._min_output = min_windup
+        self._max_output = max_windup
+
+        self._integral = _clamp(self._integral, self.windup_limits)
 
     def reset(self):
         """
