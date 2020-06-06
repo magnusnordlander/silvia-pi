@@ -2,14 +2,24 @@
 A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing PID temperature control.
 
 ## Magnus' mods
+I've *heavily* modified this project to suit my own fancy. Don't expect any of the documentation to be correct, 
+or to be able to actually use this code. Also, I've significantly rewired my Silvia compared to both the stock setup
+and to the setup described in the original README, so have fun reverse-engineering my wiring from the code.
+
+At some point in the future, I may make this usable by others, but that point is not now.
+
+Caveat emptor.
+
 ### Current Hardware
 * Raspberry Pi Zero W
 * Adafruit PT100 RTD Temperature Sensor Amplifier - MAX31865
 * ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor
-* Crydom D2425D Dual SSR
+* Crydom D2425D Dual SSR (Controls heater and pump; _right_ now also solenoid)
+    * Adafruit BSS138 4-channel I2C-safe Bi-directional Logic Level Converter (I didn't realize the D2425D required >4 V for control)
 
 ### Upcoming Hardware
-* Proportional relay
+* Crydom EZ240D5 SSR (Controls solenoid)
+* ~~Proportional relay~~ (Non-proportional relays provides good enough control)
    * MCPC2450A or similar
    * Adafruit MCP4725 for control
 
@@ -19,17 +29,21 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
 * Switch to Celsius
 * Use a MAX31865 temperature sensor
 * MQTT publishing and control
-
-### Upcoming (in order of implementation)
+* A whole lot of code restructuring
 * Steam temperature control
 * Digital controls
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
 * Preinfusion
+
+### Upcoming (in order of implementation)
+* Some kind of display
 * Smart scale integration
-    * Probably a Decent Scale
+    * Probably either a Acaia or a Decent Scale
+* asyncio instead of multiprocess
 
 ### If I feel like it
 * Pressure gauge
+    * Sensata 116CP or 60CP seems like good choices, but hard to come by
 * GraphQL API
 * React frontend
 

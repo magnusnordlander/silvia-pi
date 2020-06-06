@@ -31,6 +31,11 @@ set_temp = 105.
 steam_low_temp = 139.
 steam_high_temp = 140.
 
+# Pre-infusion settings
+use_preinfusion = False  # Just a default
+preinfusion_time = 1.2
+dwell_time = 2.5
+
 # Main loop sample rate in seconds
 fast_sample_time = 0.01
 slow_sample_time = 0.1

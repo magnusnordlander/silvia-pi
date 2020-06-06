@@ -24,7 +24,8 @@ class MqttSubscribeProcess(Process):
                 (self.prefix + "/is_awake/set", 0),
                 (self.prefix + "/steam_mode/set", 0),
                 (self.prefix + "/brewing/set", 0),
-                (self.prefix + "/ignore_buttons/set", 0)
+                (self.prefix + "/ignore_buttons/set", 0),
+                (self.prefix + "/use_preinfusion/set", 0),
             ])
 
         # The callback for when a PUBLISH message is received from the server.
@@ -35,6 +36,7 @@ class MqttSubscribeProcess(Process):
             self.listen_for_bool_change(client, 'steam_mode', msg)
             self.listen_for_bool_change(client, 'brewing', msg)
             self.listen_for_bool_change(client, 'ignore_buttons', msg)
+            self.listen_for_bool_change(client, 'use_preinfusion', msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -74,6 +76,7 @@ class MqttPublishProcess(Process):
             'brewing': None,
             'ignore_buttons': None,
             'is_awake': None,
+            'use_preinfusion': None
         }
 
     def run(self):
@@ -90,13 +93,23 @@ class MqttPublishProcess(Process):
         i = 0
 
         while True:
-            if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
-                self.publish(client, 'avgtemp')
-            self.publish(client, 'settemp')
-            self.publish(client, 'steam_mode')
-            self.publish(client, 'brewing')
-            self.publish(client, 'ignore_buttons')
-            self.publish(client, 'is_awake')
+            if i % 300 == 0:
+                self.publish_regardless(client, 'avgtemp')
+                self.publish_regardless(client, 'settemp')
+                self.publish_regardless(client, 'steam_mode')
+                self.publish_regardless(client, 'brewing')
+                self.publish_regardless(client, 'ignore_buttons')
+                self.publish_regardless(client, 'is_awake')
+                self.publish_regardless(client, 'use_preinfusion')
+            else:
+                if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
+                    self.publish(client, 'avgtemp')
+                self.publish(client, 'settemp')
+                self.publish(client, 'steam_mode')
+                self.publish(client, 'brewing')
+                self.publish(client, 'ignore_buttons')
+                self.publish(client, 'is_awake')
+                self.publish(client, 'use_preinfusion')
 
             i += 1
             sleep(1)
@@ -106,5 +119,12 @@ class MqttPublishProcess(Process):
             if self.state[key] != self.prev[key]:
                 client.publish(self.prefix + "/" + key, self.state[key])
                 self.prev[key] = self.state[key]
+        else:
+            client.publish(self.prefix + "/" + key, "N/A")
+
+    def publish_regardless(self, client, key):
+        if key in self.state:
+            client.publish(self.prefix + "/" + key, self.state[key])
+            self.prev[key] = self.state[key]
         else:
             client.publish(self.prefix + "/" + key, "N/A")

@@ -3,11 +3,14 @@ from multiprocessing import Process
 
 
 class BrewControlProcess(Process):
-    def __init__(self, state, solenoid, pump, sample_time):
+    def __init__(self, state, solenoid, pump, preinfusion_time, dwell_time, sample_time):
         super(BrewControlProcess, self).__init__()
 
         self.solenoid = solenoid
         self.pump = pump
+
+        self.preinfusion_time = preinfusion_time
+        self.dwell_time = dwell_time
 
         self.sample_time = sample_time
         self.state = state
@@ -32,7 +35,10 @@ class BrewControlProcess(Process):
 
             if prev_brew_state != self.state['brewing']:
                 if self.state['brewing']:
-                    self.start_brew()
+                    if self.state['use_preinfusion']:
+                        self.start_preinfusion()
+                    else:
+                        self.start_brew()
                 else:
                     self.stop_brew()
                 prev_brew_state = self.state['brewing']
@@ -43,6 +49,22 @@ class BrewControlProcess(Process):
             sleep(sleeptime)
             i += 1
             lasttime = time()
+
+    def start_preinfusion(self):
+        print("Starting brew with pre-infusion")
+        self.state['brew_stop'] = None
+        self.state['last_brew_time'] = None
+        self.state['brew_start'] = time()
+        self.solenoid.open()
+        self.pump.start_pumping()
+        sleep(self.preinfusion_time)
+        print("Pre-infusion done, dwelling")
+        self.pump.stop_pumping()
+        self.solenoid.close()
+        sleep(self.dwell_time)
+        print("Continuing with the shot")
+        self.solenoid.open()
+        self.pump.start_pumping()
 
     def start_brew(self):
         print("Starting brew")

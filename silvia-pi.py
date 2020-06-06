@@ -85,7 +85,7 @@ class Watchdog:
                 "WATER" if state['water_button'] else "water"
             )
 
-        status_string += "Steam mode: {}, Brewing: {}".format("On" if state['steam_mode'] else "Off", "Yes" if state['brewing'] else "No")
+        status_string += "Steam mode: {}, Pre-infusion: {}, Brewing: {}".format("On" if state['steam_mode'] else "Off", "Yes" if state['use_preinfusion'] else "No", "Yes" if state['brewing'] else "No")
 
         try:
             status_string += ", Last shot time: {} s".format(round(state['last_brew_time'], 2))
@@ -108,6 +108,7 @@ if __name__ == '__main__':
     pidstate['avgpid'] = 0.
     pidstate['steam_mode'] = False
     pidstate['ignore_buttons'] = False
+    pidstate['use_preinfusion'] = conf.use_preinfusion
 
     if conf.test_hardware:
         sensor = temperature_sensor.EmulatedSensor(pidstate)
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         'PID': process.SimplePidProcess(pidstate, conf.slow_sample_time, conf),
         'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
-        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.fast_sample_time),
+        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.preinfusion_time, conf.dwell_time, conf.fast_sample_time),
         'RestServer': process.RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
         'MQTTPublisher': process.MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
         'MQTTSubscriber': process.MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
