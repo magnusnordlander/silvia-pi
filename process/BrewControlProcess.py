@@ -46,10 +46,15 @@ class BrewControlProcess(Process):
 
     def start_brew(self):
         print("Starting brew")
+        self.state['brew_stop'] = None
+        self.state['last_brew_time'] = None
+        self.state['brew_start'] = time()
         self.solenoid.open()
         self.pump.start_pumping()
 
     def stop_brew(self):
         print("Stopping brew")
+        self.state['brew_stop'] = time()
+        self.state['last_brew_time'] = self.state['brew_stop'] - self.state['brew_start']
         self.pump.stop_pumping()
         self.solenoid.close()

@@ -2,7 +2,7 @@
 
 import sys
 from multiprocessing import Manager
-from time import sleep
+from time import sleep, time
 import os
 import config as conf
 import process
@@ -47,7 +47,6 @@ class Watchdog:
             sys.exit()
 
     def run(self):
-
         print("Starting Watchdog...")
         self.start_all_processes()
 
@@ -60,7 +59,42 @@ class Watchdog:
         while self.all_processes_alive():
             self.check_pid_i()
             sleep(1)
-            print(self.state)
+            print(self.format_state(self.state))
+#            print(self.state)
+
+    def format_state(self, state):
+        status_string = ""
+
+        if state['is_awake']:
+            status_string += "Awake, "
+        else:
+            status_string += "Asleep, "
+
+        status_string += "T={}, <T>={}, PID={}, <PID>={}, P={}, I={}, D={}, ".format(state['tempc'], state['avgtemp'], state['pidval'], state['avgpid'], state['pterm'], state['iterm'], state['dterm'])
+
+        if state['ignore_buttons']:
+            status_string += "Buttons (ignored): <{}>, <{}>, <{}>, ".format(
+                "BREW" if state['brew_button'] else "brew",
+                "STEAM" if state['steam_button'] else "steam",
+                "WATER" if state['water_button'] else "water"
+            )
+        else:
+            status_string += "Buttons: <{}>, <{}>, <{}>, ".format(
+                "BREW" if state['brew_button'] else "brew",
+                "STEAM" if state['steam_button'] else "steam",
+                "WATER" if state['water_button'] else "water"
+            )
+
+        status_string += "Steam mode: {}, Brewing: {}".format("On" if state['steam_mode'] else "Off", "Yes" if state['brewing'] else "No")
+
+        try:
+            status_string += ", Last shot time: {} s".format(round(state['last_brew_time'], 2))
+        except KeyError:
+            pass
+        except TypeError:
+            status_string += ", Current shot going on {} s".format(round(time() - state['brew_start']))
+
+        return status_string
 
 
 if __name__ == '__main__':

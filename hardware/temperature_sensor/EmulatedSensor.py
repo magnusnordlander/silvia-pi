@@ -13,7 +13,6 @@ class EmulatedSensor:
         self.ambient_temperature = 18.0
 
     def add_energy(self, degrees):
-        print("Adding energy: ", degrees)
         self.state['water_temp'] += degrees
 
     def get_temp_c(self):

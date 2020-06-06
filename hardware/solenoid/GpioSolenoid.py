@@ -24,5 +24,4 @@ class GpioSolenoid(object):
 
     def cleanup(self):
         print("Cleaning up GPIO solenoid " + str(self.control_pin))
-        GPIO.output(self.control_pin, 0)
         GPIO.cleanup()
