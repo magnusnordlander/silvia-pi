@@ -87,9 +87,9 @@ if __name__ == '__main__':
         'PID': SimplePidProcess(pidstate, conf),
         'SteamControl': SteamControlProcess(pidstate, conf.sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': HeatingElementControllerProcess(pidstate, boiler),
-#        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
-#        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
-#        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
+        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
+        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
+        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
     }
 
     watchdog = Watchdog(pidstate, processes)
