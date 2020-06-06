@@ -5,9 +5,9 @@ from multiprocessing import Manager
 from time import sleep
 import os
 import config as conf
-from process import HeatingElementControllerProcess, SimplePidProcess, MqttProcess, RestServerProcess, SteamControlProcess, SensorReaderProcess
-import boiler
-import temperature_sensor
+import process
+from hardware import temperature_sensor, boiler, button, solenoid, pump
+
 
 class Watchdog:
     def __init__(self, state, process_dict):
@@ -60,6 +60,7 @@ class Watchdog:
         while self.all_processes_alive():
             self.check_pid_i()
             sleep(1)
+            print(self.state)
 
 
 if __name__ == '__main__':
@@ -73,23 +74,28 @@ if __name__ == '__main__':
     pidstate['avgpid'] = 0.
     pidstate['steam_mode'] = False
 
-
-#    sensor = temperature_sensor.EmulatedSensor(pidstate)
-#    boiler = boiler.EmulatedBoiler(sensor)
-
-    boiler = boiler.GpioBoiler(conf.he_pin)
-
-    import board
-    sensor = temperature_sensor.Max31865Sensor(board.D5, rtd_nominal=100.5)
+    if conf.test_hardware:
+        sensor = temperature_sensor.EmulatedSensor(pidstate)
+        boiler = boiler.EmulatedBoiler(sensor)
+        brew_button = button.EmulatedRandomButton()
+        solenoid = solenoid.EmulatedSolenoid()
+        pump = pump.EmulatedPump()
+    else:
+        boiler = boiler.GpioBoiler(conf.he_pin)
+        sensor = temperature_sensor.Max31865Sensor(conf.temp_sensor_cs_pin, rtd_nominal=100.5)
+        brew_button = button.GpioSwitchButton(conf.brew_button_pin)
+        solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
+        pump = pump.EmulatedPump()
 
     processes = {
-        'SensorReader': SensorReaderProcess(pidstate, sensor, conf.sample_time),
-        'PID': SimplePidProcess(pidstate, conf),
-        'SteamControl': SteamControlProcess(pidstate, conf.sample_time, conf.steam_low_temp, conf.steam_high_temp),
-        'HeatingElement': HeatingElementControllerProcess(pidstate, boiler),
-        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
-        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
-        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
+        'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, conf.sample_time, 10),
+        'PID': process.SimplePidProcess(pidstate, conf.sample_time * 10, conf),
+        'SteamControl': process.SteamControlProcess(pidstate, conf.sample_time * 10, conf.steam_low_temp, conf.steam_high_temp),
+        'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
+        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.sample_time),
+        'RestServer': process.RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
+        'MQTTPublisher': process.MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
+        'MQTTSubscriber': process.MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
     }
 
     watchdog = Watchdog(pidstate, processes)

@@ -6,10 +6,11 @@ from multiprocessing import Process
 
 
 class SimplePidProcess(Process):
-    def __init__(self, state, conf):
+    def __init__(self, state, sample_time, conf):
         super(SimplePidProcess, self).__init__()
 
         self.state = state
+        self.sample_time = sample_time
         self.conf = conf
 
     def run(self):
@@ -17,7 +18,7 @@ class SimplePidProcess(Process):
         state = self.state
 
         pid = simple_pid_fork.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], windup_limits=(-20, 20))
-        pid.sample_time = conf.sample_time*5
+        pid.sample_time = self.sample_time*5
 
         i=0
         pidhist = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
@@ -44,13 +45,13 @@ class SimplePidProcess(Process):
                 if avgtemp > 90:
                     lastwarm = i
 
-                if iscold and (i-lastcold)*conf.sample_time > 60*15:
+                if iscold and (i-lastcold)*self.sample_time > 60*15:
                     print("Changing to warm tunings")
                     pid.tunings = (conf.Pw, conf.Iw, conf.Dw)
                     pid.setpoint = state['settemp']
                     iscold = False
 
-                if iswarm and (i-lastwarm)*conf.sample_time > 60*15:
+                if iswarm and (i-lastwarm)*self.sample_time > 60*15:
                     print("Changing to cold tunings")
                     pid.tunings = (conf.Pc, conf.Ic, conf.Dc)
                     pid.setpoint = state['settemp']
@@ -74,7 +75,7 @@ class SimplePidProcess(Process):
                 state['dterm'] = round(pid._derivative, 2)
                 state['iscold'] = iscold
 
-                sleeptime = lasttime+conf.sample_time-time()
+                sleeptime = lasttime+self.sample_time-time()
                 if sleeptime < 0:
                     sleeptime = 0
                 sleep(sleeptime)

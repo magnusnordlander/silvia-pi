@@ -4,8 +4,21 @@
 spi_port = 0
 spi_dev = 0
 
-# Pin # for relay connected to heating element
-he_pin = 16
+test_hardware = False
+
+# Pin numbers for stuff
+try:
+    import board
+
+    temp_sensor_cs_pin = board.D5
+    he_pin = board.D18
+    solenoid_pin = board.D14
+    brew_button_pin = board.D21
+except NotImplementedError:
+    temp_sensor_cs_pin = None
+    he_pin = None
+    solenoid_pin = None
+    brew_button_pin = None
 
 # Default temperatures
 set_temp = 105.
@@ -13,7 +26,7 @@ steam_low_temp = 139.
 steam_high_temp = 140.
 
 # Main loop sample rate in seconds
-sample_time = 0.1
+sample_time = 0.01
 
 # PID Proportional, Integral, and Derivative values
 Pc = 3.4
