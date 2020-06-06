@@ -87,15 +87,19 @@ class MqttPublishProcess(Process):
 
         client.connect(self.server, self.port, 60)
 
+        i = 0
+
         while True:
-            self.publish(client, 'avgtemp')
+            if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
+                self.publish(client, 'avgtemp')
             self.publish(client, 'settemp')
             self.publish(client, 'steam_mode')
             self.publish(client, 'brewing')
             self.publish(client, 'ignore_buttons')
             self.publish(client, 'is_awake')
 
-            sleep(5)
+            i += 1
+            sleep(1)
 
     def publish(self, client, key):
         if key in self.state:
