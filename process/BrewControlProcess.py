@@ -13,8 +13,6 @@ class BrewControlProcess(Process):
         self.state = state
 
     def run(self):
-        temphist = [0.,0.,0.,0.,0.]
-        avgtemp = 0.
         i=0
         lasttime = time()
 
