@@ -7,8 +7,10 @@ spi_dev = 0
 # Pin # for relay connected to heating element
 he_pin = 16
 
-# Default goal temperature
-set_temp = 95.
+# Default temperatures
+set_temp = 105.
+steam_low_temp = 139.
+steam_high_temp = 140.
 
 # Main loop sample rate in seconds
 sample_time = 0.1
@@ -24,3 +26,6 @@ Dw = 40.0
 
 #Web/REST Server Options
 port = 8080
+
+mqtt_server = "192.168.10.66"
+mqtt_prefix = "silvia"

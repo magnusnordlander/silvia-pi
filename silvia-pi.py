@@ -64,11 +64,6 @@ class Watchdog:
 
 if __name__ == '__main__':
 
-    #  boiler = GpioBoiler(conf.he_pin)
-
-    #  import board
-    #  sensor = Max31865Sensor(board.D5, rtd_nominal=100.5)
-
     manager = Manager()
     pidstate = manager.dict()
     pidstate['is_awake'] = True
@@ -78,17 +73,21 @@ if __name__ == '__main__':
     pidstate['steam_mode'] = False
 
 
-    sensor = temperature_sensor.EmulatedSensor(pidstate)
-    boiler = boiler.EmulatedBoiler(sensor)
+    # sensor = temperature_sensor.EmulatedSensor(pidstate)
+    # boiler = boiler.EmulatedBoiler(sensor)
 
+    boiler = boiler.GpioBoiler(conf.he_pin)
+
+    import board
+    sensor = temperature_sensor.Max31865Sensor(board.D5, rtd_nominal=100.5)
 
     processes = {
         'PID': SimplePidProcess(pidstate, sensor, conf),
-        'SteamControl': SteamControlProcess(pidstate, sensor, conf),
+        'SteamControl': SteamControlProcess(pidstate, sensor, conf.sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': HeatingElementControllerProcess(pidstate, boiler),
-#        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
-        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server="192.168.10.66", prefix="fakesilvia"),
-        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server="192.168.10.66", prefix="fakesilvia")
+        'RestServer': RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
+        'MQTTPublisher': MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
+        'MQTTSubscriber': MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)
     }
 
     watchdog = Watchdog(pidstate, processes)
