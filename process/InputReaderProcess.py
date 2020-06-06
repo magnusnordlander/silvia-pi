@@ -3,12 +3,14 @@ from time import sleep, time
 from math import isnan
 from multiprocessing import Process
 
-class SensorReaderProcess(Process):
-    def __init__(self, state, temperature_sensor, sample_time):
-        super(SensorReaderProcess, self).__init__()
+class InputReaderProcess(Process):
+    def __init__(self, state, temperature_sensor, brew_button, sample_time, temperature_factor):
+        super(InputReaderProcess, self).__init__()
 
         self.temperature_sensor = temperature_sensor
+        self.brew_button = brew_button
         self.sample_time = sample_time
+        self.temperature_factor = temperature_factor
         self.state = state
 
     def run(self):
@@ -17,23 +19,24 @@ class SensorReaderProcess(Process):
         i=0
         lasttime = time()
 
-        while True:  # Loops 10x/second
-            tempc = self.temperature_sensor.get_temp_c()
-            if isnan(tempc):
-                nanct += 1
-                if nanct > 100000:
-                    sys.exit()
-                continue
-            else:
-                nanct = 0
+        while True:
+            self.state['brew_button'] = self.brew_button.button_state()
 
-            temphist[i % 5] = tempc
-            avgtemp = sum(temphist) / len(temphist)
+            if i % self.temperature_factor == 0:
+                tempc = self.temperature_sensor.get_temp_c()
+                if isnan(tempc):
+                    nanct += 1
+                    if nanct > 100000:
+                        sys.exit()
+                    continue
+                else:
+                    nanct = 0
 
-            self.state['tempc'] = round(tempc, 2)
-            self.state['avgtemp'] = round(avgtemp, 2)
+                temphist[i % 5] = tempc
+                avgtemp = sum(temphist) / len(temphist)
 
-            print(self.state)
+                self.state['tempc'] = round(tempc, 2)
+                self.state['avgtemp'] = round(avgtemp, 2)
 
             sleeptime = lasttime + self.sample_time - time()
             if sleeptime < 0:
