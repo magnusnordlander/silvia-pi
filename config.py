@@ -26,9 +26,9 @@ steam_low_temp = 139.
 steam_high_temp = 140.
 
 # Main loop sample rate in seconds
-fast_sample_time = 0.001
+fast_sample_time = 0.01
 slow_sample_time = 0.1
-factor = 100
+factor = 10
 
 # PID Proportional, Integral, and Derivative values
 Pc = 3.4
