@@ -15,9 +15,11 @@ class GpioBoiler(object):
     self.cleanup()
 
   def heat_on(self):
+    print("Heat on")
     GPIO.output(self.control_pin, 1)
 
   def heat_off(self):
+    print("Heat off")
     GPIO.output(self.control_pin, 0)
 
   def cleanup(self):

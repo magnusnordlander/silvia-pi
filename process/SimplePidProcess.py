@@ -62,7 +62,6 @@ class SimplePidProcess(Process):
                     lastsettemp = state['settemp']
 
                 if i%10 == 0 :
-                    print("Inputting data to pid", avgtemp)
                     pidout = pid(avgtemp)
                     pidhist[int(i/10%10)] = pidout
                     avgpid = sum(pidhist)/len(pidhist)
