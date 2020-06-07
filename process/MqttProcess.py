@@ -24,6 +24,7 @@ class MqttSubscribeProcess(Process):
                 (self.prefix + "/is_awake/set", 0),
                 (self.prefix + "/steam_mode/set", 0),
                 (self.prefix + "/brewing/set", 0),
+                (self.prefix + "/hot_water/set", 0),
                 (self.prefix + "/ignore_buttons/set", 0),
                 (self.prefix + "/use_preinfusion/set", 0),
                 (self.prefix + "/use_pump_tunings/set", 0),
@@ -41,6 +42,7 @@ class MqttSubscribeProcess(Process):
             self.listen_for_bool_change(client, 'is_awake', msg)
             self.listen_for_bool_change(client, 'steam_mode', msg)
             self.listen_for_bool_change(client, 'brewing', msg)
+            self.listen_for_bool_change(client, 'hot_water', msg)
             self.listen_for_bool_change(client, 'ignore_buttons', msg)
             self.listen_for_bool_change(client, 'use_preinfusion', msg)
             self.listen_for_bool_change(client, 'use_pump_tunings', msg)
@@ -96,6 +98,7 @@ class MqttPublishProcess(Process):
             'settemp': None,
             'steam_mode': None,
             'brewing': None,
+            'hot_water': None,
             'ignore_buttons': None,
             'is_awake': None,
             'use_pump_tunings': None,
@@ -126,6 +129,7 @@ class MqttPublishProcess(Process):
                 self.publish_regardless(client, 'settemp')
                 self.publish_regardless(client, 'steam_mode')
                 self.publish_regardless(client, 'brewing')
+                self.publish_regardless(client, 'hot_water')
                 self.publish_regardless(client, 'ignore_buttons')
                 self.publish_regardless(client, 'is_awake')
                 self.publish_regardless(client, 'use_preinfusion')
@@ -141,6 +145,7 @@ class MqttPublishProcess(Process):
                 self.publish(client, 'settemp')
                 self.publish(client, 'steam_mode')
                 self.publish(client, 'brewing')
+                self.publish(client, 'hot_water')
                 self.publish(client, 'ignore_buttons')
                 self.publish(client, 'is_awake')
                 self.publish(client, 'use_preinfusion')

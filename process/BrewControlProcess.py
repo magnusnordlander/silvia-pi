@@ -23,9 +23,13 @@ class BrewControlProcess(Process):
         lasttime = time()
 
         self.state['brewing'] = False
+        self.state['hot_water'] = False
+        prev_brew_state = False
+        prev_hot_water_state = False
+
+
         self.state['pumping'] = False
         self.state['solenoid_open'] = False
-        prev_brew_state = False
 
         while True:
             if not self.state['ignore_buttons']:
@@ -38,6 +42,15 @@ class BrewControlProcess(Process):
                     print("Button says stop brew")
                     self.state['brewing'] = False
 
+                # Brewing takes priority over hot water<
+                if not self.state['brewing']:
+                    if not self.state['hot_water'] and self.state['water_button']:
+                        print("Button says start pumping hot water")
+                        self.state['hot_water'] = True
+                    elif self.state['hot_water'] and not self.state['water_button']:
+                        print("Button says start pumping hot water")
+                        self.state['hot_water'] = True
+
             if prev_brew_state != self.state['brewing']:
                 if self.state['brewing']:
                     if self.state['use_preinfusion']:
@@ -47,6 +60,13 @@ class BrewControlProcess(Process):
                 else:
                     self.stop_brew()
                 prev_brew_state = self.state['brewing']
+
+            if not self.state['brewing'] and prev_hot_water_state != self.state['hot_water']:
+                if self.state['hot_water']:
+                    self.start_pump()
+                else:
+                    self.stop_pump()
+                prev_hot_water_state = self.state['hot_water']
 
             sleeptime = lasttime + self.sample_time - time()
             if sleeptime < 0:

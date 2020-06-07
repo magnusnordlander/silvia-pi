@@ -54,8 +54,8 @@ tunings = {
         RESPONSIVENESS: 10 # Lower is more responsive
     },
     TUNINGS_WARM: {
-        KP: 2.9,
-        KI: 0.3,
+        KP: 4.0,
+        KI: 0.2,
         KD: 40.0,
         RESPONSIVENESS: 10  # Lower is more responsive
     },
