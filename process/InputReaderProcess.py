@@ -2,9 +2,10 @@ import sys
 from time import sleep, time
 from math import isnan
 from multiprocessing import Process
+from utils import ResizableRingBuffer
 
 class InputReaderProcess(Process):
-    def __init__(self, state, temperature_sensor, brew_button, steam_button, water_button, sample_time, temperature_factor):
+    def __init__(self, state, temperature_sensor, brew_button, steam_button, water_button, sample_time, temperature_factor, ringbuffer_size = 3):
         super(InputReaderProcess, self).__init__()
 
         self.temperature_sensor = temperature_sensor
@@ -14,9 +15,9 @@ class InputReaderProcess(Process):
         self.sample_time = sample_time
         self.temperature_factor = temperature_factor
         self.state = state
+        self.temphist = ResizableRingBuffer(ringbuffer_size)
 
     def run(self):
-        temphist = [0.,0.,0.,0.,0.]
         i=0
         j=0
         lasttime = time()
@@ -36,9 +37,9 @@ class InputReaderProcess(Process):
                 else:
                     nanct = 0
 
-                temphist[j % 5] = tempc
+                self.temphist.append(tempc)
                 self.state['tempc'] = round(tempc, 2)
-                self.state['avgtemp'] = round(sum(temphist) / len(temphist), 2)
+                self.state['avgtemp'] = round(self.temphist.avg(), 2)
                 j += 1
 
             sleeptime = lasttime + self.sample_time - time()
