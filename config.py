@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from .const import *
+from utils.const import *
 
 # Raspberry Pi SPI Port and Device
 spi_port = 0
@@ -44,6 +44,8 @@ slow_sample_time = 0.1
 factor = 10
 
 # PID Proportional, Integral, and Derivative values
+use_pump_tunings = True
+
 tunings = {
     TUNINGS_COLD: {
         KP: 3.4,

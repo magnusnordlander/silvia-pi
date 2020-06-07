@@ -11,7 +11,7 @@ class RestServerProcess(Process):
     def run(self):
         state = self.state
 
-        @route('/home')
+        @route('/')
         def docroot():
             return static_file('index.html',self.basedir)
 

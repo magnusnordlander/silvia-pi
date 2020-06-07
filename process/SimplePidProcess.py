@@ -3,7 +3,7 @@ from time import sleep, time
 from math import isnan
 import simple_pid_fork
 from multiprocessing import Process
-
+from utils.const import *
 
 class SimplePidProcess(Process):
     def __init__(self, state, sample_time, conf):
@@ -17,19 +17,18 @@ class SimplePidProcess(Process):
         conf = self.conf
         state = self.state
 
-        pid = simple_pid_fork.PID(conf.Pc, conf.Ic, conf.Dc, setpoint=state['settemp'], windup_limits=(-20, 20))
+        tunings = self.get_tunings()
+
+        pid = simple_pid_fork.PID(setpoint=state['settemp'], windup_limits=(-20, 20))
+        pid.tunings = tunings
         pid.sample_time = self.sample_time*5
 
         i=0
         pidhist = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
         avgpid = 0.
-        lastsettemp = state['settemp']
+        previous_setpoint = state['settemp']
         lasttime = time()
-        sleeptime = 0
-        iscold = True
-        iswarm = False
-        lastcold = 0
-        lastwarm = 0
+        previous_tunings = tunings
 
         try:
             while True:  # Loops 10x/second
@@ -39,30 +38,18 @@ class SimplePidProcess(Process):
                     sleep(1)
                     continue
 
-                if avgtemp < 40:
-                    lastcold = i
+                tunings = self.get_tunings()
+                if tunings != previous_tunings:
+                    print("Changing tunings to ", tunings)
+                    pid.tunings = tunings
+                    previous_tunings = tunings
 
-                if avgtemp > 90:
-                    lastwarm = i
-
-                if iscold and (i-lastcold)*self.sample_time > 60*15:
-                    print("Changing to warm tunings")
-                    pid.tunings = (conf.Pw, conf.Iw, conf.Dw)
-                    pid.setpoint = state['settemp']
-                    iscold = False
-
-                if iswarm and (i-lastwarm)*self.sample_time > 60*15:
-                    print("Changing to cold tunings")
-                    pid.tunings = (conf.Pc, conf.Ic, conf.Dc)
-                    pid.setpoint = state['settemp']
-                    iscold = True
-
-                if state['settemp'] != lastsettemp :
+                if state['settemp'] != previous_setpoint:
                     print("Changing set point")
                     pid.setpoint = state['settemp']
-                    lastsettemp = state['settemp']
+                    previous_setpoint = state['settemp']
 
-                if i%10 == 0 :
+                if i % 10 == 0:
                     pidout = pid(avgtemp)
                     pidhist[int(i/10%10)] = pidout
                     avgpid = sum(pidhist)/len(pidhist)
@@ -73,7 +60,6 @@ class SimplePidProcess(Process):
                 state['pterm'] = round(pid._proportional, 2)
                 state['iterm'] = round(pid._integral, 2)
                 state['dterm'] = round(pid._derivative, 2)
-                state['iscold'] = iscold
 
                 sleeptime = lasttime+self.sample_time-time()
                 if sleeptime < 0:
@@ -84,3 +70,14 @@ class SimplePidProcess(Process):
 
         finally:
             pid.reset()
+
+    def get_tunings(self):
+        tunings = self.state['tunings']
+
+        if tunings == TUNINGS_DYNAMIC:
+            return self.state['dynamic_kp'], self.state['dynamic_kd'], self.state['dynamic_kd']
+
+        try:
+            return self.conf.tunings[tunings][KP], self.conf.tunings[tunings][KI], self.conf.tunings[tunings][KD]
+        except KeyError:
+            return 2.9, 0.3, 40.

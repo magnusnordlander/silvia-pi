@@ -7,7 +7,7 @@ import os
 import config as conf
 import process
 from hardware import temperature_sensor, boiler, button, solenoid, pump
-from .const import *
+from utils.const import *
 
 class Watchdog:
     def __init__(self, state, process_dict):
@@ -99,6 +99,7 @@ class Watchdog:
 
 if __name__ == '__main__':
 
+
     manager = Manager()
     pidstate = manager.dict()
     pidstate['is_awake'] = True
@@ -110,6 +111,10 @@ if __name__ == '__main__':
     pidstate['ignore_buttons'] = False
     pidstate['use_preinfusion'] = conf.use_preinfusion
     pidstate['tunings'] = TUNINGS_COLD
+    pidstate['dynamic_kp'] = 0.
+    pidstate['dynamic_ki'] = 0.
+    pidstate['dynamic_kd'] = 0.
+    pidstate['use_pump_tunings'] = conf.use_pump_tunings
 
     if conf.test_hardware:
         sensor = temperature_sensor.EmulatedSensor(pidstate)

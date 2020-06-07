@@ -26,7 +26,11 @@ class MqttSubscribeProcess(Process):
                 (self.prefix + "/brewing/set", 0),
                 (self.prefix + "/ignore_buttons/set", 0),
                 (self.prefix + "/use_preinfusion/set", 0),
-                (self.prefix + "/he_follow_pump/set", 0),
+                (self.prefix + "/use_pump_tunings/set", 0),
+                (self.prefix + "/tunings/set", 0),
+                (self.prefix + "/dynamic_kp/set", 0),
+                (self.prefix + "/dynamic_ki/set", 0),
+                (self.prefix + "/dynamic_kd/set", 0),
             ])
 
         # The callback for when a PUBLISH message is received from the server.
@@ -38,7 +42,11 @@ class MqttSubscribeProcess(Process):
             self.listen_for_bool_change(client, 'brewing', msg)
             self.listen_for_bool_change(client, 'ignore_buttons', msg)
             self.listen_for_bool_change(client, 'use_preinfusion', msg)
-            self.listen_for_bool_change(client, 'he_follow_pump', msg)
+            self.listen_for_bool_change(client, 'use_pump_tunings', msg)
+            self.listen_for_string_change(client, 'tunings', msg)
+            self.listen_for_float_change(client, 'dynamic_kp', msg)
+            self.listen_for_float_change(client, 'dynamic_ki', msg)
+            self.listen_for_float_change(client, 'dynamic_kd', msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -55,6 +63,11 @@ class MqttSubscribeProcess(Process):
     def listen_for_float_change(self, client, key, msg):
         if msg.topic == self.prefix + "/" + key + "/set":
             self.state[key] = float(msg.payload)
+            client.publish(self.prefix + "/" + key, self.state[key])
+
+    def listen_for_string_change(self, client, key, msg):
+        if msg.topic == self.prefix + "/" + key + "/set":
+            self.state[key] = msg.payload.decode("utf-8")
             client.publish(self.prefix + "/" + key, self.state[key])
 
     def listen_for_bool_change(self, client, key, msg):
@@ -78,8 +91,12 @@ class MqttPublishProcess(Process):
             'brewing': None,
             'ignore_buttons': None,
             'is_awake': None,
-            'he_follow_pump': None,
-            'use_preinfusion': None
+            'use_pump_tunings': None,
+            'use_preinfusion': None,
+            'tunings': None,
+            'dynamic_kp': None,
+            'dynamic_ki': None,
+            'dynamic_kd': None,
         }
 
     def run(self):
@@ -104,7 +121,11 @@ class MqttPublishProcess(Process):
                 self.publish_regardless(client, 'ignore_buttons')
                 self.publish_regardless(client, 'is_awake')
                 self.publish_regardless(client, 'use_preinfusion')
-                self.publish_regardless(client, 'he_follow_pump')
+                self.publish_regardless(client, 'use_pump_tunings')
+                self.publish_regardless(client, 'tunings')
+                self.publish_regardless(client, 'dynamic_kp')
+                self.publish_regardless(client, 'dynamic_ki')
+                self.publish_regardless(client, 'dynamic_kd')
             else:
                 if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
                     self.publish(client, 'avgtemp')
@@ -114,7 +135,11 @@ class MqttPublishProcess(Process):
                 self.publish(client, 'ignore_buttons')
                 self.publish(client, 'is_awake')
                 self.publish(client, 'use_preinfusion')
-                self.publish(client, 'he_follow_pump')
+                self.publish(client, 'use_pump_tunings')
+                self.publish(client, 'tunings')
+                self.publish(client, 'dynamic_kp')
+                self.publish(client, 'dynamic_ki')
+                self.publish(client, 'dynamic_kd')
 
             i += 1
             sleep(1)

@@ -1,5 +1,6 @@
 from time import sleep, time
 from multiprocessing import Process
+from utils.const import *
 
 
 class BrewControlProcess(Process):
@@ -14,6 +15,8 @@ class BrewControlProcess(Process):
 
         self.sample_time = sample_time
         self.state = state
+
+        self.prev_tunings = None
 
     def run(self):
         i=0
@@ -86,10 +89,16 @@ class BrewControlProcess(Process):
     def start_pump(self):
         self.pump.start_pumping()
         self.state['pumping'] = True
+        self.prev_tunings = self.state['tunings']
+        if self.state['use_pump_tunings']:
+            self.state['tunings'] = TUNINGS_PUMPING
 
     def stop_pump(self):
         self.pump.stop_pumping()
         self.state['pumping'] = False
+        if self.prev_tunings is not None:
+            self.state['tunings'] = self.prev_tunings
+        self.prev_tunings = None
 
     def open_solenoid(self):
         self.solenoid.open()
