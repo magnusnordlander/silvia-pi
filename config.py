@@ -50,17 +50,20 @@ tunings = {
     TUNINGS_COLD: {
         KP: 3.4,
         KI: 0.3,  # Traditional I multiplied by slow_sample_time
-        KD: 40.0
+        KD: 40.0,
+        RESPONSIVENESS: 10 # Lower is more responsive
     },
     TUNINGS_WARM: {
         KP: 2.9,
         KI: 0.3,
-        KD: 40.0
+        KD: 40.0,
+        RESPONSIVENESS: 10  # Lower is more responsive
     },
     TUNINGS_PUMPING: {
         KP: 5,
         KI: 0.3,
-        KD: 40.0
+        KD: 40.0,
+        RESPONSIVENESS: 3
     },
 }
 

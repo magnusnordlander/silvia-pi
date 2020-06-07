@@ -1,9 +1,8 @@
-import sys
 from time import sleep, time
-from math import isnan
 import simple_pid_fork
 from multiprocessing import Process
 from utils.const import *
+from utils import ResizableRingBuffer
 
 class SimplePidProcess(Process):
     def __init__(self, state, sample_time, conf):
@@ -14,21 +13,23 @@ class SimplePidProcess(Process):
         self.conf = conf
 
     def run(self):
-        conf = self.conf
         state = self.state
 
         tunings = self.get_tunings()
+        responsiveness = self.get_responsiveness()
 
         pid = simple_pid_fork.PID(setpoint=state['settemp'], windup_limits=(-20, 20))
         pid.tunings = tunings
         pid.sample_time = self.sample_time*5
 
         i=0
-        pidhist = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+        pidout = 0
+        pidhist = ResizableRingBuffer(responsiveness)
         avgpid = 0.
         previous_setpoint = state['settemp']
         lasttime = time()
         previous_tunings = tunings
+        previous_responsiveness = responsiveness
 
         try:
             while True:  # Loops 10x/second
@@ -38,21 +39,27 @@ class SimplePidProcess(Process):
                     sleep(1)
                     continue
 
-                tunings = self.get_tunings()
-                if tunings != previous_tunings:
-                    print("Changing tunings to ", tunings)
-                    pid.tunings = tunings
-                    previous_tunings = tunings
-
-                if state['settemp'] != previous_setpoint:
-                    print("Changing set point")
-                    pid.setpoint = state['settemp']
-                    previous_setpoint = state['settemp']
-
                 if i % 10 == 0:
+                    tunings = self.get_tunings()
+                    if tunings != previous_tunings:
+                        print("Changing tunings to ", tunings)
+                        pid.tunings = tunings
+                        previous_tunings = tunings
+
+                    if state['settemp'] != previous_setpoint:
+                        print("Changing set point")
+                        pid.setpoint = state['settemp']
+                        previous_setpoint = state['settemp']
+
+                    responsiveness = self.get_responsiveness()
+                    if responsiveness != previous_responsiveness:
+                        print("Changing responsiveness to ", responsiveness)
+                        pidhist.resize(responsiveness)
+                        previous_responsiveness = responsiveness
+
                     pidout = pid(avgtemp)
-                    pidhist[int(i/10%10)] = pidout
-                    avgpid = sum(pidhist)/len(pidhist)
+                    pidhist.append(pidout)
+                    avgpid = pidhist.avg()
 
                 state['i'] = i
                 state['pidval'] = round(pidout, 2)
@@ -81,3 +88,14 @@ class SimplePidProcess(Process):
             return self.conf.tunings[tunings][KP], self.conf.tunings[tunings][KI], self.conf.tunings[tunings][KD]
         except KeyError:
             return 2.9, 0.3, 40.
+
+    def get_responsiveness(self):
+        tunings = self.state['tunings']
+
+        if tunings == TUNINGS_DYNAMIC:
+            return self.state['dynamic_responsiveness']
+
+        try:
+            return self.conf.tunings[tunings][RESPONSIVENESS]
+        except KeyError:
+            return 10

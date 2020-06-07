@@ -114,6 +114,7 @@ if __name__ == '__main__':
     pidstate['dynamic_kp'] = 0.
     pidstate['dynamic_ki'] = 0.
     pidstate['dynamic_kd'] = 0.
+    pidstate['dynamic_responsiveness'] = 10
     pidstate['use_pump_tunings'] = conf.use_pump_tunings
 
     if conf.test_hardware:

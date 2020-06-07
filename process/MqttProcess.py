@@ -31,6 +31,7 @@ class MqttSubscribeProcess(Process):
                 (self.prefix + "/dynamic_kp/set", 0),
                 (self.prefix + "/dynamic_ki/set", 0),
                 (self.prefix + "/dynamic_kd/set", 0),
+                (self.prefix + "/dynamic_responsiveness/set", 0),
             ])
 
         # The callback for when a PUBLISH message is received from the server.
@@ -47,6 +48,7 @@ class MqttSubscribeProcess(Process):
             self.listen_for_float_change(client, 'dynamic_kp', msg)
             self.listen_for_float_change(client, 'dynamic_ki', msg)
             self.listen_for_float_change(client, 'dynamic_kd', msg)
+            self.listen_for_int_change(client, 'dynamic_responsiveness', msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -63,6 +65,11 @@ class MqttSubscribeProcess(Process):
     def listen_for_float_change(self, client, key, msg):
         if msg.topic == self.prefix + "/" + key + "/set":
             self.state[key] = float(msg.payload)
+            client.publish(self.prefix + "/" + key, self.state[key])
+
+    def listen_for_int_change(self, client, key, msg):
+        if msg.topic == self.prefix + "/" + key + "/set":
+            self.state[key] = int(msg.payload)
             client.publish(self.prefix + "/" + key, self.state[key])
 
     def listen_for_string_change(self, client, key, msg):
@@ -97,6 +104,7 @@ class MqttPublishProcess(Process):
             'dynamic_kp': None,
             'dynamic_ki': None,
             'dynamic_kd': None,
+            'dynamic_responsiveness': None,
         }
 
     def run(self):
@@ -126,6 +134,7 @@ class MqttPublishProcess(Process):
                 self.publish_regardless(client, 'dynamic_kp')
                 self.publish_regardless(client, 'dynamic_ki')
                 self.publish_regardless(client, 'dynamic_kd')
+                self.publish_regardless(client, 'dynamic_responsiveness')
             else:
                 if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
                     self.publish(client, 'avgtemp')
@@ -140,6 +149,7 @@ class MqttPublishProcess(Process):
                 self.publish(client, 'dynamic_kp')
                 self.publish(client, 'dynamic_ki')
                 self.publish(client, 'dynamic_kd')
+                self.publish(client, 'dynamic_responsiveness')
 
             i += 1
             sleep(1)
