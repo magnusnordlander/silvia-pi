@@ -7,7 +7,7 @@ import os
 import config as conf
 import process
 from hardware import temperature_sensor, boiler, button, solenoid, pump
-
+from .const import *
 
 class Watchdog:
     def __init__(self, state, process_dict):
@@ -109,6 +109,7 @@ if __name__ == '__main__':
     pidstate['steam_mode'] = False
     pidstate['ignore_buttons'] = False
     pidstate['use_preinfusion'] = conf.use_preinfusion
+    pidstate['tunings'] = TUNINGS_COLD
 
     if conf.test_hardware:
         sensor = temperature_sensor.EmulatedSensor(pidstate)

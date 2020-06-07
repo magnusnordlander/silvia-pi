@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from .const import *
+
 # Raspberry Pi SPI Port and Device
 spi_port = 0
 spi_dev = 0
@@ -42,13 +44,23 @@ slow_sample_time = 0.1
 factor = 10
 
 # PID Proportional, Integral, and Derivative values
-Pc = 3.4
-Ic = 0.3
-Dc = 40.0
-
-Pw = 2.9
-Iw = 0.3
-Dw = 40.0
+tunings = {
+    TUNINGS_COLD: {
+        KP: 3.4,
+        KI: 0.3,  # Traditional I multiplied by slow_sample_time
+        KD: 40.0
+    },
+    TUNINGS_WARM: {
+        KP: 2.9,
+        KI: 0.3,
+        KD: 40.0
+    },
+    TUNINGS_PUMPING: {
+        KP: 1.5,
+        KI: 0.3,
+        KD: 40.0
+    },
+}
 
 #Web/REST Server Options
 port = 8080
