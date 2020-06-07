@@ -70,7 +70,7 @@ class Watchdog:
         else:
             status_string += "Asleep, "
 
-        status_string += "T={}, <T>={}, PID={}, <PID>={}, P={}, I={}, D={}, ".format(state['tempc'], state['avgtemp'], state['pidval'], state['avgpid'], state['pterm'], state['iterm'], state['dterm'])
+        status_string += "T={}, <T>={}, <PID>={}, P={}, I={}, D={}, ".format(state['tempc'], state['avgtemp'], state['avgpid'], state['pterm'], state['iterm'], state['dterm'])
 
         if state['ignore_buttons']:
             status_string += "Buttons (ignored): <{}>, <{}>, <{}>, ".format(
@@ -85,7 +85,7 @@ class Watchdog:
                 "WATER" if state['water_button'] else "water"
             )
 
-        status_string += "Steam mode: {}, Pre-infusion: {}, Brewing: {}".format("On" if state['steam_mode'] else "Off", "Yes" if state['use_preinfusion'] else "No", "Yes" if state['brewing'] else "No")
+        status_string += "Tunings: {}, Steam mode: {}, Pre-infusion: {}, Brewing: {}".format(state['tunings'], "On" if state['steam_mode'] else "Off", "Yes" if state['use_preinfusion'] else "No", "Yes" if state['brewing'] else "No")
 
         try:
             status_string += ", Last shot time: {} s".format(round(state['last_brew_time'], 2))

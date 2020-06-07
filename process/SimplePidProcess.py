@@ -58,8 +58,8 @@ class SimplePidProcess(Process):
                 state['pidval'] = round(pidout, 2)
                 state['avgpid'] = round(avgpid, 2)
                 state['pterm'] = round(pid._proportional, 2)
-                state['iterm'] = round(pid._integral, 2)
-                state['dterm'] = round(pid._derivative, 2)
+                state['iterm'] = round(pid._integral * pid.Ki, 2)
+                state['dterm'] = round(pid._derivative * -pid.Kd, 2)
 
                 sleeptime = lasttime+self.sample_time-time()
                 if sleeptime < 0:

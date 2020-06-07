@@ -58,7 +58,7 @@ tunings = {
         KD: 40.0
     },
     TUNINGS_PUMPING: {
-        KP: 1.5,
+        KP: 5,
         KI: 0.3,
         KD: 40.0
     },
