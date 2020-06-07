@@ -48,8 +48,8 @@ class BrewControlProcess(Process):
                         print("Button says start pumping hot water")
                         self.state['hot_water'] = True
                     elif self.state['hot_water'] and not self.state['water_button']:
-                        print("Button says start pumping hot water")
-                        self.state['hot_water'] = True
+                        print("Button says stop pumping hot water")
+                        self.state['hot_water'] = False
 
             if prev_brew_state != self.state['brewing']:
                 if self.state['brewing']:
