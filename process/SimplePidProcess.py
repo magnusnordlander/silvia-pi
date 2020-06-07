@@ -82,7 +82,7 @@ class SimplePidProcess(Process):
         tunings = self.state['tunings']
 
         if tunings == TUNINGS_DYNAMIC:
-            return self.state['dynamic_kp'], self.state['dynamic_kd'], self.state['dynamic_kd']
+            return self.state['dynamic_kp'], self.state['dynamic_ki'], self.state['dynamic_kd']
 
         try:
             return self.conf.tunings[tunings][KP], self.conf.tunings[tunings][KI], self.conf.tunings[tunings][KD]
