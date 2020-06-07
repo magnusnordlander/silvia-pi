@@ -20,6 +20,8 @@ class BrewControlProcess(Process):
         lasttime = time()
 
         self.state['brewing'] = False
+        self.state['pumping'] = False
+        self.state['solenoid_open'] = False
         prev_brew_state = False
 
         while True:
@@ -55,28 +57,44 @@ class BrewControlProcess(Process):
         self.state['brew_stop'] = None
         self.state['last_brew_time'] = None
         self.state['brew_start'] = time()
-        self.solenoid.open()
-        self.pump.start_pumping()
+        self.open_solenoid()
+        self.start_pump()
         sleep(self.preinfusion_time)
         print("Pre-infusion done, dwelling")
-        self.pump.stop_pumping()
-        self.solenoid.close()
+        self.stop_pump()
+        self.close_solenoid()
         sleep(self.dwell_time)
         print("Continuing with the shot")
-        self.solenoid.open()
-        self.pump.start_pumping()
+        self.open_solenoid()
+        self.start_pump()
 
     def start_brew(self):
         print("Starting brew")
         self.state['brew_stop'] = None
         self.state['last_brew_time'] = None
         self.state['brew_start'] = time()
-        self.solenoid.open()
-        self.pump.start_pumping()
+        self.open_solenoid()
+        self.start_pump()
 
     def stop_brew(self):
         print("Stopping brew")
         self.state['brew_stop'] = time()
         self.state['last_brew_time'] = self.state['brew_stop'] - self.state['brew_start']
+        self.stop_pump()
+        self.close_solenoid()
+
+    def start_pump(self):
+        self.pump.start_pumping()
+        self.state['pumping'] = True
+
+    def stop_pump(self):
         self.pump.stop_pumping()
+        self.state['pumping'] = False
+
+    def open_solenoid(self):
+        self.solenoid.open()
+        self.state['solenoid_open'] = True
+
+    def close_solenoid(self):
         self.solenoid.close()
+        self.state['solenoid_open'] = False

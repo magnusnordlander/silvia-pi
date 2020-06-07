@@ -7,12 +7,23 @@ class HeatingElementControllerProcess(Process):
 
         self.boiler = boiler
         self.state = state
+        self.state['he_follow_pump'] = True
+
         boiler.heat_off()
 
     def run(self):
         try:
             while True:
-                if self.state['steam_mode']:
+                try:
+                    pumping = self.state['pumping']
+                except KeyError:
+                    pumping = False
+
+                if self.state['he_follow_pump'] and pumping and self.state['avgtemp'] < 120:  # Just a sanity check to not run too hot
+                    self.boiler.heat_on()
+                    sleep(0.1)
+
+                elif self.state['steam_mode']:
                     if self.state['steam_element_on']:
                         self.boiler.heat_on()
                     else:

@@ -19,7 +19,8 @@ Caveat emptor.
 
 ### Upcoming Hardware
 * Crydom EZ240D5 SSR (Controls solenoid)
-* ~~Proportional relay~~ (Non-proportional relays provides good enough control)
+* 128x64 SPI OLED, SSD1302 controller
+* ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control)
    * MCPC2450A or similar
    * Adafruit MCP4725 for control
 
@@ -36,7 +37,7 @@ Caveat emptor.
 * Preinfusion
 
 ### Upcoming (in order of implementation)
-* Some kind of display
+* 128x64 SPI OLED display
 * Smart scale integration
     * Probably either a Acaia or a Decent Scale
 * asyncio instead of multiprocess
@@ -44,6 +45,7 @@ Caveat emptor.
 ### If I feel like it
 * Pressure gauge
     * Sensata 116CP or 60CP seems like good choices, but hard to come by
+    * BDSensors DMP331P or DS200P could also be good choices
 * GraphQL API
 * React frontend
 
