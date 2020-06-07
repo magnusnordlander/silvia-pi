@@ -2,49 +2,33 @@ import sys
 from time import sleep, time
 from math import isnan
 from multiprocessing import Process
-from utils import ResizableRingBuffer
+from utils import ResizableRingBuffer, topics
+import paho.mqtt.client as mqtt
 
 class InputReaderProcess(Process):
-    def __init__(self, state, temperature_sensor, brew_button, steam_button, water_button, sample_time, temperature_factor, ringbuffer_size = 3):
+    def __init__(self, mqtt_connection, temperature_sensor, brew_button, steam_button, water_button):
         super(InputReaderProcess, self).__init__()
 
+        self.mqtt_connection = mqtt_connection
         self.temperature_sensor = temperature_sensor
         self.brew_button = brew_button
         self.steam_button = steam_button
         self.water_button = water_button
-        self.sample_time = sample_time
-        self.temperature_factor = temperature_factor
-        self.state = state
-        self.temphist = ResizableRingBuffer(ringbuffer_size)
+        self.temphist = ResizableRingBuffer(3)
 
     def run(self):
-        i=0
-        j=0
-        lasttime = time()
+
+        def on_connect(client, userdata, flags, rc):
+            print("Connected with result code "+str(rc))
+
+        client = mqtt.Client()
+        client.on_connect = on_connect
+
+        client.connect(self.mqtt_connection['server'], self.mqtt_connection['port'], 60)
 
         while True:
-            self.state['brew_button'] = self.brew_button.button_state()
-            self.state['steam_button'] = self.steam_button.button_state()
-            self.state['water_button'] = self.water_button.button_state()
+            client.publish(topics.TOPIC_COFFEE_BUTTON, self.brew_button.button_state())
+            client.publish(topics.TOPIC_STEAM_BUTTON, self.steam_button.button_state())
+            client.publish(topics.TOPIC_WATER_BUTTON, self.water_button.button_state())
 
-            if i % self.temperature_factor == 0:
-                tempc = self.temperature_sensor.get_temp_c()
-                if isnan(tempc):
-                    nanct += 1
-                    if nanct > 100000:
-                        sys.exit()
-                    continue
-                else:
-                    nanct = 0
-
-                self.temphist.append(tempc)
-                self.state['tempc'] = round(tempc, 2)
-                self.state['avgtemp'] = round(self.temphist.avg(), 2)
-                j += 1
-
-            sleeptime = lasttime + self.sample_time - time()
-            if sleeptime < 0:
-                sleeptime = 0
-            sleep(sleeptime)
-            i += 1
-            lasttime = time()
+            sleep(1)

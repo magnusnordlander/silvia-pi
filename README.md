@@ -98,6 +98,12 @@ Caveat emptor.
 * GPIO26
 * GPIO27
 
+#### Super weird edge cases no one but me should worry about
+* If we're already running the water pump and start brewing, what should happen?
+    * We should open the solenoid too
+    * When brewing stops (either due to actually stopping the brew, or due to preinfusion), we stop pumping. There's no practical use case for remembering the previous pump state.
+    
+
 ## Original README (Mostly not applicable anymore)
 
 #### Currently Implemented Features:

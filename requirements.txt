@@ -11,3 +11,6 @@ pyacaia
 pygatt
 pexpect
 pillow
+asyncio
+bleak
+asyncio-mqtt

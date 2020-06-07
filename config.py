@@ -24,9 +24,9 @@ except NotImplementedError:
     temp_sensor_cs_pin = None
     he_pin = None
     solenoid_pin = None
-    brew_button_pin = None
-    steam_button_pin = None
-    water_button_pin = None
+    brew_button_pin = 21
+    steam_button_pin = 16
+    water_button_pin = 20
 
 # Weighted shots
 acaia_mac = "00:1c:97:1a:a0:2f"
@@ -76,4 +76,4 @@ tunings = {
 port = 8080
 
 mqtt_server = "192.168.10.66"
-mqtt_prefix = "silvia"
+mqtt_prefix = "fakesilvia"
