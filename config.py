@@ -17,8 +17,8 @@ try:
     solenoid_pin = 14
 
     brew_button_pin = 21
-    steam_button_pin = 20
-    water_button_pin = 16
+    steam_button_pin = 16
+    water_button_pin = 20
 except NotImplementedError:
     temp_sensor_cs_pin = None
     he_pin = None
