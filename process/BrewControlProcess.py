@@ -16,6 +16,8 @@ class BrewControlProcess(Process):
         self.sample_time = sample_time
         self.state = state
 
+        self.scale_tare = 0.
+
         self.prev_tunings = None
 
     def run(self):
@@ -51,12 +53,14 @@ class BrewControlProcess(Process):
                         print("Button says stop pumping hot water")
                         self.state['hot_water'] = False
 
+            if self.state['brewing'] and prev_brew_state and self.state['brew_to_weight']:
+                if (self.state['scale_weight'] - self.scale_tare) >= self.state['target_weight']:
+                    print("Weight achieved (", (self.state['scale_weight'] - self.scale_tare), " over ", self.state['target_weight'], " stopping brew")
+                    self.state['brewing'] = False
+
             if prev_brew_state != self.state['brewing']:
                 if self.state['brewing']:
-                    if self.state['use_preinfusion']:
-                        self.start_preinfusion()
-                    else:
-                        self.start_brew()
+                    self.start_brew()
                 else:
                     self.stop_brew()
                 prev_brew_state = self.state['brewing']
@@ -75,29 +79,25 @@ class BrewControlProcess(Process):
             i += 1
             lasttime = time()
 
-    def start_preinfusion(self):
-        print("Starting brew with pre-infusion")
-        self.state['brew_stop'] = None
-        self.state['last_brew_time'] = None
-        self.state['brew_start'] = time()
-        self.open_solenoid()
-        self.start_pump()
-        sleep(self.preinfusion_time)
-        print("Pre-infusion done, dwelling")
-        self.stop_pump()
-        self.close_solenoid()
-        sleep(self.dwell_time)
-        print("Continuing with the shot")
-        self.open_solenoid()
-        self.start_pump()
-
     def start_brew(self):
         print("Starting brew")
         self.state['brew_stop'] = None
         self.state['last_brew_time'] = None
         self.state['brew_start'] = time()
+
+        self.scale_tare = self.state['scale_weight']
+
         self.open_solenoid()
         self.start_pump()
+        if self.state['use_preinfusion']:
+            sleep(self.preinfusion_time)
+            print("Pre-infusion done, dwelling")
+            self.stop_pump()
+            self.close_solenoid()
+            sleep(self.dwell_time)
+            print("Continuing with the shot")
+            self.open_solenoid()
+            self.start_pump()
 
     def stop_brew(self):
         print("Stopping brew")

@@ -7,3 +7,4 @@ adafruit-blinka
 adafruit-circuitpython-max31855
 paho-mqtt
 simple-pid
+pyacaia

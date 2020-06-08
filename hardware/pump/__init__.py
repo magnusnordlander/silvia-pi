@@ -1,2 +1,6 @@
 from .EmulatedPump import EmulatedPump
-from .GpioPump import GpioPump
+
+try:
+    from .GpioPump import GpioPump
+except ModuleNotFoundError:
+    pass

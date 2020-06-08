@@ -1,6 +1,6 @@
 from multiprocessing import Process
 import paho.mqtt.client as mqtt
-from time import sleep
+from time import sleep, time
 
 
 class MqttSubscribeProcess(Process):
@@ -33,6 +33,9 @@ class MqttSubscribeProcess(Process):
                 (self.prefix + "/dynamic_ki/set", 0),
                 (self.prefix + "/dynamic_kd/set", 0),
                 (self.prefix + "/dynamic_responsiveness/set", 0),
+                (self.prefix + "/keep_scale_connected/set", 0),
+                (self.prefix + "/target_weight/set", 0),
+                (self.prefix + "/brew_to_weight/set", 0),
             ])
 
         # The callback for when a PUBLISH message is received from the server.
@@ -51,6 +54,9 @@ class MqttSubscribeProcess(Process):
             self.listen_for_float_change(client, 'dynamic_ki', msg)
             self.listen_for_float_change(client, 'dynamic_kd', msg)
             self.listen_for_int_change(client, 'dynamic_responsiveness', msg)
+            self.listen_for_float_change(client, 'target_weight', msg)
+            self.listen_for_bool_change(client, 'brew_to_weight', msg)
+            self.listen_for_bool_change(client, 'keep_scale_connected', msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -108,6 +114,11 @@ class MqttPublishProcess(Process):
             'dynamic_ki': None,
             'dynamic_kd': None,
             'dynamic_responsiveness': None,
+            'scale_weight': None,
+            'target_weight': None,
+            'brew_to_weight': None,
+            'keep_scale_connected': None,
+            'shot_time': None,
         }
 
     def run(self):
@@ -124,7 +135,17 @@ class MqttPublishProcess(Process):
         i = 0
 
         while True:
+            if self.state['last_brew_time'] is not None:
+                shot_time = round(self.state['last_brew_time'], 2)
+            elif self.state['brew_start'] is not None:
+                shot_time = round(time() - self.state['brew_start'])
+            else:
+                shot_time = 0
+
             if i % 300 == 0:
+                client.publish(self.prefix + "/shot_time", shot_time)
+                self.prev['shot_time'] = shot_time
+
                 self.publish_regardless(client, 'avgtemp')
                 self.publish_regardless(client, 'settemp')
                 self.publish_regardless(client, 'steam_mode')
@@ -139,7 +160,16 @@ class MqttPublishProcess(Process):
                 self.publish_regardless(client, 'dynamic_ki')
                 self.publish_regardless(client, 'dynamic_kd')
                 self.publish_regardless(client, 'dynamic_responsiveness')
+                self.publish_regardless(client, 'scale_weight')
+                self.publish_regardless(client, 'target_weight')
+                self.publish_regardless(client, 'brew_to_weight')
+                self.publish_regardless(client, 'keep_scale_connected')
+
             else:
+                if shot_time != self.prev['shot_time']:
+                    client.publish(self.prefix + "/shot_time", shot_time)
+                    self.prev['shot_time'] = shot_time
+
                 #if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
                 self.publish(client, 'avgtemp')
                 self.publish(client, 'settemp')
@@ -155,6 +185,10 @@ class MqttPublishProcess(Process):
                 self.publish(client, 'dynamic_ki')
                 self.publish(client, 'dynamic_kd')
                 self.publish(client, 'dynamic_responsiveness')
+                self.publish(client, 'scale_weight')
+                self.publish(client, 'target_weight')
+                self.publish(client, 'brew_to_weight')
+                self.publish(client, 'keep_scale_connected')
 
             i += 1
             sleep(1)

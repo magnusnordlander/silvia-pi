@@ -6,7 +6,7 @@ from time import sleep, time
 import os
 import config as conf
 import process
-from hardware import temperature_sensor, boiler, button, solenoid, pump
+from hardware import temperature_sensor, boiler, button, solenoid, pump, scale
 from utils.const import *
 
 class Watchdog:
@@ -70,7 +70,7 @@ class Watchdog:
         else:
             status_string += "Asleep, "
 
-        status_string += "T={}, <T>={}, <PID>={}, P={}, I={}, D={}, ".format(state['tempc'], state['avgtemp'], state['avgpid'], state['pterm'], state['iterm'], state['dterm'])
+        status_string += "T={}, <T>={}, <PID>={}, P={}, I={}, D={}, M={}g ".format(state['tempc'], state['avgtemp'], state['avgpid'], state['pterm'], state['iterm'], state['dterm'], round(state['scale_weight'], 2) if state['scale_weight'] is not None else state['scale_weight'])
 
         if state['ignore_buttons']:
             status_string += "Buttons (ignored): <{}>, <{}>, <{}>, ".format(
@@ -85,13 +85,19 @@ class Watchdog:
                 "WATER" if state['water_button'] else "water"
             )
 
-        status_string += "Tunings: {}, Steam mode: {}, Pre-infusion: {}, Brewing: {}".format(state['tunings'], "On" if state['steam_mode'] else "Off", "Yes" if state['use_preinfusion'] else "No", "Yes" if state['brewing'] else "No")
+        status_string += "Tunings: {}, Steam mode: {}, Pre-infusion: {}, ".format(state['tunings'], "On" if state['steam_mode'] else "Off", "Yes" if state['use_preinfusion'] else "No")
+        if state['brew_to_weight']:
+            status_string += "Target weight: {}g, ".format(state['target_weight'])
+        else:
+            status_string += "Target weight: {}g (not used), ".format(state['target_weight'])
 
-        try:
+        status_string += "Brewing: {}".format("Yes" if state['brewing'] else "No")
+
+        print(self.state['last_brew_time'], self.state['brew_start'], self.state['brew_stop'])
+
+        if self.state['last_brew_time'] is not None:
             status_string += ", Last shot time: {} s".format(round(state['last_brew_time'], 2))
-        except KeyError:
-            pass
-        except TypeError:
+        elif self.state['brew_start'] is not None:
             status_string += ", Current shot going on {} s".format(round(time() - state['brew_start']))
 
         return status_string
@@ -116,6 +122,13 @@ if __name__ == '__main__':
     pidstate['dynamic_kd'] = 0.
     pidstate['dynamic_responsiveness'] = 10
     pidstate['use_pump_tunings'] = conf.use_pump_tunings
+    pidstate['keep_scale_connected'] = False
+    pidstate['scale_weight'] = 0.
+    pidstate['target_weight'] = 0.
+    pidstate['brew_to_weight'] = False
+    pidstate['brew_stop'] = None
+    pidstate['last_brew_time'] = None
+    pidstate['brew_start'] = None
 
     if conf.test_hardware:
         sensor = temperature_sensor.EmulatedSensor(pidstate)
@@ -125,6 +138,7 @@ if __name__ == '__main__':
         water_button = button.EmulatedRandomButton()
         solenoid = solenoid.EmulatedSolenoid()
         pump = pump.EmulatedPump()
+        scale = scale.EmulatedScale()
     else:
         boiler = boiler.GpioBoiler(conf.he_pin)
         sensor = temperature_sensor.Max31865Sensor(conf.temp_sensor_cs_pin, rtd_nominal=100.5)
@@ -133,9 +147,11 @@ if __name__ == '__main__':
         water_button = button.GpioSwitchButton(conf.water_button_pin)
         solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
         pump = pump.GpioPump(conf.pump_pin)
+        scale = scale.EmulatedScale()
 
     processes = {
         'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, steam_button, water_button, conf.fast_sample_time, conf.factor),
+        'ScaleReader': process.ScaleReaderProcess(pidstate, scale, conf.fast_sample_time),
         'PID': process.SimplePidProcess(pidstate, conf.slow_sample_time, conf),
         'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
