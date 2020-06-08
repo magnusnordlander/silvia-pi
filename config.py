@@ -15,6 +15,7 @@ try:
     temp_sensor_cs_pin = board.D5
     he_pin = 18
     solenoid_pin = 14
+    pump_pin = 15
 
     brew_button_pin = 21
     steam_button_pin = 16

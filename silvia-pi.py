@@ -132,7 +132,7 @@ if __name__ == '__main__':
         steam_button = button.GpioSwitchButton(conf.steam_button_pin)
         water_button = button.GpioSwitchButton(conf.water_button_pin)
         solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
-        pump = pump.EmulatedPump()
+        pump = pump.GpioPump(conf.pump_pin)
 
     processes = {
         'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, steam_button, water_button, conf.fast_sample_time, conf.factor),
