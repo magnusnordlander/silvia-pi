@@ -140,8 +140,8 @@ class MqttPublishProcess(Process):
                 self.publish_regardless(client, 'dynamic_kd')
                 self.publish_regardless(client, 'dynamic_responsiveness')
             else:
-                if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
-                    self.publish(client, 'avgtemp')
+                #if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
+                self.publish(client, 'avgtemp')
                 self.publish(client, 'settemp')
                 self.publish(client, 'steam_mode')
                 self.publish(client, 'brewing')
