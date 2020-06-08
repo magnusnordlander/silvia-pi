@@ -93,8 +93,6 @@ class Watchdog:
 
         status_string += "Brewing: {}".format("Yes" if state['brewing'] else "No")
 
-        print(self.state['last_brew_time'], self.state['brew_start'], self.state['brew_stop'])
-
         if self.state['last_brew_time'] is not None:
             status_string += ", Last shot time: {} s".format(round(state['last_brew_time'], 2))
         elif self.state['brew_start'] is not None:
