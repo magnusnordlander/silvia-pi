@@ -14,13 +14,15 @@ Caveat emptor.
 * Raspberry Pi Zero W
 * Adafruit PT100 RTD Temperature Sensor Amplifier - MAX31865
 * ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor
-* Crydom D2425D Dual SSR (Controls heater and pump; _right_ now also solenoid)
+* Crydom D2425D Dual SSR (Controls heater and solenoid)
     * Adafruit BSS138 4-channel I2C-safe Bi-directional Logic Level Converter (I didn't realize the D2425D required >4 V for control)
+* Crydom EZ240D5 SSR (Controls pump)
+    * Also connected through the BSS138, but doesn't technically have to be
 
 ### Upcoming Hardware
-* Crydom EZ240D5 SSR (Controls solenoid)
+* Acaia Lunar
 * 128x64 SPI OLED, SSD1302 controller
-* ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control)
+* ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control, and proportional relays being super pricy)
    * MCPC2450A or similar
    * Adafruit MCP4725 for control
 
@@ -36,13 +38,17 @@ Caveat emptor.
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
 * Preinfusion
 
+### In progress
+* Smart scale integration (Acaia)
+    
 ### Upcoming (in order of implementation)
 * 128x64 SPI OLED display
-* Smart scale integration
-    * Probably either a Acaia or a Decent Scale
 * asyncio instead of multiprocess
 
 ### If I feel like it
+* Second temperature sensor near group head?
+* Liquid level sensor
+    * eTape?
 * Pressure gauge
     * Sensata 116CP or 60CP seems like good choices, but hard to come by
     * BDSensors DMP331P or DS200P could also be good choices
