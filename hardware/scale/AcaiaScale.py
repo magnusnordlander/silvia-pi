@@ -2,8 +2,8 @@ from pyacaia import AcaiaScale as Acaia
 
 
 class AcaiaScale:
-    def __init__(self, mac):
-        self.scale = Acaia(mac=mac)
+    def __init__(self, mac, backend='pygatt'):
+        self.scale = Acaia(mac=mac, backend=backend)
 
     def connect(self):
         self.scale.connect()

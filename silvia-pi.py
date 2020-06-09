@@ -145,7 +145,7 @@ if __name__ == '__main__':
         water_button = button.GpioSwitchButton(conf.water_button_pin)
         solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
         pump = pump.GpioPump(conf.pump_pin)
-        scale = scale.EmulatedScale()
+        scale = scale.AcaiaScale(mac="00:1c:97:1a:a0:2f")
 
     processes = {
         'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, steam_button, water_button, conf.fast_sample_time, conf.factor),
