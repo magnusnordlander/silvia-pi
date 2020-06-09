@@ -4,9 +4,9 @@ A Raspberry Pi modification to the Rancilio Silvia Espresso Machine implementing
 ## Magnus' mods
 I've *heavily* modified this project to suit my own fancy. Don't expect any of the documentation to be correct, 
 or to be able to actually use this code. Also, I've significantly rewired my Silvia compared to both the stock setup
-and to the setup described in the original README, so have fun reverse-engineering my wiring from the code.
+and to the setup described in the original README, so have fun reverse-engineering my wiring from the code. (Also, don't attempt to rewire your machine unless you *really know what you're doing*. The internal components run on mains voltage, in a hot and wet environment. Mains power can kill you.)
 
-At some point in the future, I may make this usable by others, but that point is not now.
+At some point in the future, I may make this more usable by others, but that point is not now.
 
 Caveat emptor.
 
@@ -18,9 +18,9 @@ Caveat emptor.
     * Adafruit BSS138 4-channel I2C-safe Bi-directional Logic Level Converter (I didn't realize the D2425D required >4 V for control)
 * Crydom EZ240D5 SSR (Controls pump)
     * Also connected through the BSS138, but doesn't technically have to be
+* Acaia Lunar
 
 ### Upcoming Hardware
-* Acaia Lunar
 * 128x64 SPI OLED, SSD1302 controller
 * ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control, and proportional relays being super pricy)
    * MCPC2450A or similar
@@ -37,9 +37,9 @@ Caveat emptor.
 * Digital controls
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
 * Preinfusion
+* Smart scale integration (Acaia)
 
 ### In progress
-* Smart scale integration (Acaia)
     
 ### Upcoming (in order of implementation)
 * 128x64 SPI OLED display
