@@ -55,7 +55,7 @@ Caveat emptor.
 * GraphQL API
 * React frontend
 
-## Original README
+## Original README (Mostly not applicable anymore)
 
 #### Currently Implemented Features:
 * Brew temperature control
