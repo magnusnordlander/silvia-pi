@@ -54,7 +54,7 @@ class BrewControlProcess(Process):
                         self.state['hot_water'] = False
 
             if self.state['brewing'] and prev_brew_state and self.state['brew_to_weight']:
-                if (self.state['scale_weight'] - self.scale_tare) >= self.state['target_weight'] + self.weighted_shot_reaction_compensation:
+                if (self.state['scale_weight'] - self.scale_tare) >= (self.state['target_weight'] + self.weighted_shot_reaction_compensation):
                     print("Weight achieved (", (self.state['scale_weight'] - self.scale_tare), " over ", self.state['target_weight'], " stopping brew")
                     self.state['brewing'] = False
 
