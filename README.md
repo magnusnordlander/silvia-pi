@@ -39,9 +39,8 @@ Caveat emptor.
 * Preinfusion
 * Smart scale integration (Acaia)
 
-### In progress
-    
-### Upcoming (in order of implementation)
+### In progress (not always in pushed branches)
+* Add reaction time compensation for weighted shots
 * 128x64 SPI OLED display
 * asyncio instead of multiprocess
 
