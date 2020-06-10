@@ -6,7 +6,7 @@ from time import sleep, time
 import os
 import config as conf
 import process
-from hardware import temperature_sensor, boiler, button, solenoid, pump, scale
+from hardware import temperature_sensor, boiler, button, solenoid, pump, scale, display
 from utils.const import *
 
 class Watchdog:
@@ -112,8 +112,10 @@ if __name__ == '__main__':
     pidstate['avgtemp'] = None
     pidstate['avgpid'] = 0.
     pidstate['steam_mode'] = False
-    pidstate['ignore_buttons'] = False
+    pidstate['ignore_buttons'] = True
     pidstate['use_preinfusion'] = conf.use_preinfusion
+    pidstate['preinfusion_time'] = conf.preinfusion_time
+    pidstate['dwell_time'] = conf.dwell_time
     pidstate['tunings'] = TUNINGS_COLD
     pidstate['dynamic_kp'] = 0.
     pidstate['dynamic_ki'] = 0.
@@ -137,6 +139,7 @@ if __name__ == '__main__':
         solenoid = solenoid.EmulatedSolenoid()
         pump = pump.EmulatedPump()
         scale = scale.EmulatedScale()
+        display = display.EmulatedDisplay(os.path.dirname(__file__) + '/emulated_display.jpg')
     else:
         boiler = boiler.GpioBoiler(conf.he_pin)
         sensor = temperature_sensor.Max31865Sensor(conf.temp_sensor_cs_pin, rtd_nominal=100.5)
@@ -145,15 +148,18 @@ if __name__ == '__main__':
         water_button = button.GpioSwitchButton(conf.water_button_pin)
         solenoid = solenoid.GpioSolenoid(conf.solenoid_pin)
         pump = pump.GpioPump(conf.pump_pin)
-        scale = scale.AcaiaScale(mac="00:1c:97:1a:a0:2f")
+        scale = scale.AcaiaScale(mac=conf.acaia_mac)
+        display = display.EmulatedDisplay(os.path.dirname(__file__) + '/emulated_display.jpg')
 
+    print(os.path.dirname(__file__) + '/emulated_display.jpg')
     processes = {
         'InputReader': process.InputReaderProcess(pidstate, sensor, brew_button, steam_button, water_button, conf.fast_sample_time, conf.factor),
         'ScaleReader': process.ScaleReaderProcess(pidstate, scale, conf.fast_sample_time),
         'PID': process.SimplePidProcess(pidstate, conf.slow_sample_time, conf),
         'SteamControl': process.SteamControlProcess(pidstate, conf.slow_sample_time, conf.steam_low_temp, conf.steam_high_temp),
         'HeatingElement': process.HeatingElementControllerProcess(pidstate, boiler),
-        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.preinfusion_time, conf.dwell_time, conf.fast_sample_time),
+        'BrewControl': process.BrewControlProcess(pidstate, solenoid, pump, conf.weighted_shot_reaction_compensation, conf.disable_buttons_during_weighted_shot, conf.fast_sample_time),
+        'DisplayProcess': process.DisplayProcess(pidstate, display, conf.slow_sample_time),
         'RestServer': process.RestServerProcess(pidstate, os.path.dirname(__file__) + '/www/', port=conf.port),
         'MQTTPublisher': process.MqttProcess.MqttPublishProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix),
         'MQTTSubscriber': process.MqttProcess.MqttSubscribeProcess(pidstate, server=conf.mqtt_server, prefix=conf.mqtt_prefix)

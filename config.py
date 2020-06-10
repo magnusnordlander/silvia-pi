@@ -28,6 +28,10 @@ except NotImplementedError:
     steam_button_pin = None
     water_button_pin = None
 
+# Weighted shots
+acaia_mac = "00:1c:97:1a:a0:2f"
+weighted_shot_reaction_compensation = -2  #grams
+disable_buttons_during_weighted_shot = True
 
 # Default temperatures
 set_temp = 105.

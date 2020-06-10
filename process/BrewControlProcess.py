@@ -4,19 +4,19 @@ from utils.const import *
 
 
 class BrewControlProcess(Process):
-    def __init__(self, state, solenoid, pump, preinfusion_time, dwell_time, sample_time):
+    def __init__(self, state, solenoid, pump, weighted_shot_reaction_compensation, disable_buttons_during_weighted_shot, sample_time):
         super(BrewControlProcess, self).__init__()
 
+        self.disable_buttons_during_weighted_shot = disable_buttons_during_weighted_shot
+        self.weighted_shot_reaction_compensation = weighted_shot_reaction_compensation
         self.solenoid = solenoid
         self.pump = pump
-
-        self.preinfusion_time = preinfusion_time
-        self.dwell_time = dwell_time
 
         self.sample_time = sample_time
         self.state = state
 
         self.scale_tare = 0.
+        self.auto_disabled_buttons = False
 
         self.prev_tunings = None
 
@@ -54,9 +54,13 @@ class BrewControlProcess(Process):
                         self.state['hot_water'] = False
 
             if self.state['brewing'] and prev_brew_state and self.state['brew_to_weight']:
-                if (self.state['scale_weight'] - self.scale_tare) >= self.state['target_weight']:
+                if (self.state['scale_weight'] - self.scale_tare) >= self.state['target_weight'] + self.weighted_shot_reaction_compensation:
                     print("Weight achieved (", (self.state['scale_weight'] - self.scale_tare), " over ", self.state['target_weight'], " stopping brew")
                     self.state['brewing'] = False
+
+                    if self.auto_disabled_buttons:
+                        self.auto_disabled_buttons = False
+                        self.state['ignore_buttons'] = False
 
             if prev_brew_state != self.state['brewing']:
                 if self.state['brewing']:
@@ -87,14 +91,18 @@ class BrewControlProcess(Process):
 
         self.scale_tare = self.state['scale_weight']
 
+        if self.disable_buttons_during_weighted_shot and self.state['brew_to_weight']:
+            self.state['ignore_buttons'] = True
+            self.auto_disabled_buttons = True
+
         self.open_solenoid()
         self.start_pump()
         if self.state['use_preinfusion']:
-            sleep(self.preinfusion_time)
+            sleep(self.state['preinfusion_time'])
             print("Pre-infusion done, dwelling")
             self.stop_pump()
             self.close_solenoid()
-            sleep(self.dwell_time)
+            sleep(self.state['dwell_time'])
             print("Continuing with the shot")
             self.open_solenoid()
             self.start_pump()

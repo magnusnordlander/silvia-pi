@@ -10,3 +10,4 @@ simple-pid
 pyacaia
 pygatt
 pexpect
+pillow
