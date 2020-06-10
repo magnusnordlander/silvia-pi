@@ -2,6 +2,40 @@ from multiprocessing import Process
 import paho.mqtt.client as mqtt
 from time import sleep, time
 
+def get_shot_time(state):
+    if state['last_brew_time'] is not None:
+        return round(state['last_brew_time'], 2)
+    elif state['brew_start'] is not None:
+        return round(time() - state['brew_start'])
+    else:
+        return 0
+
+writable_state = {
+    "settemp": "float",
+    "is_awake": "bool",
+    "steam_mode": "bool",
+    "brewing": "bool",
+    "hot_water": "bool",
+    "ignore_buttons": "bool",
+    "use_preinfusion": "bool",
+    "use_pump_tunings": "bool",
+    "tunings": "string",
+    "dynamic_kp": "float",
+    "dynamic_ki": "float",
+    "dynamic_kd": "float",
+    "dynamic_responsiveness": "int",
+    "keep_scale_connected": "bool",
+    "target_weight": "float",
+    "brew_to_weight": "bool",
+    "preinfusion_time": "float",
+    "dwell_time": "float",
+}
+
+readonly_state = {
+    'avgtemp': True,
+    'scale_weight': True,
+    'shot_time': lambda state: get_shot_time(state)
+}
 
 class MqttSubscribeProcess(Process):
     def __init__(self, state, server, port=1883, prefix="silvia"):
@@ -19,44 +53,20 @@ class MqttSubscribeProcess(Process):
 
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
-            client.subscribe([
-                (self.prefix + "/settemp/set", 0),
-                (self.prefix + "/is_awake/set", 0),
-                (self.prefix + "/steam_mode/set", 0),
-                (self.prefix + "/brewing/set", 0),
-                (self.prefix + "/hot_water/set", 0),
-                (self.prefix + "/ignore_buttons/set", 0),
-                (self.prefix + "/use_preinfusion/set", 0),
-                (self.prefix + "/use_pump_tunings/set", 0),
-                (self.prefix + "/tunings/set", 0),
-                (self.prefix + "/dynamic_kp/set", 0),
-                (self.prefix + "/dynamic_ki/set", 0),
-                (self.prefix + "/dynamic_kd/set", 0),
-                (self.prefix + "/dynamic_responsiveness/set", 0),
-                (self.prefix + "/keep_scale_connected/set", 0),
-                (self.prefix + "/target_weight/set", 0),
-                (self.prefix + "/brew_to_weight/set", 0),
-            ])
+            client.subscribe(list(map(lambda key: ("{}/{}/set".format(self.prefix, key), 0), writable_state.keys())))
 
         # The callback for when a PUBLISH message is received from the server.
         def on_message(client, userdata, msg):
             print(msg.topic+" "+str(msg.payload))
-            self.listen_for_float_change(client, 'settemp', msg)
-            self.listen_for_bool_change(client, 'is_awake', msg)
-            self.listen_for_bool_change(client, 'steam_mode', msg)
-            self.listen_for_bool_change(client, 'brewing', msg)
-            self.listen_for_bool_change(client, 'hot_water', msg)
-            self.listen_for_bool_change(client, 'ignore_buttons', msg)
-            self.listen_for_bool_change(client, 'use_preinfusion', msg)
-            self.listen_for_bool_change(client, 'use_pump_tunings', msg)
-            self.listen_for_string_change(client, 'tunings', msg)
-            self.listen_for_float_change(client, 'dynamic_kp', msg)
-            self.listen_for_float_change(client, 'dynamic_ki', msg)
-            self.listen_for_float_change(client, 'dynamic_kd', msg)
-            self.listen_for_int_change(client, 'dynamic_responsiveness', msg)
-            self.listen_for_float_change(client, 'target_weight', msg)
-            self.listen_for_bool_change(client, 'brew_to_weight', msg)
-            self.listen_for_bool_change(client, 'keep_scale_connected', msg)
+            for key in writable_state:
+                if writable_state[key] == 'float':
+                    self.listen_for_float_change(client, key, msg)
+                elif writable_state[key] == 'bool':
+                    self.listen_for_bool_change(client, key, msg)
+                elif writable_state[key] == 'string':
+                    self.listen_for_string_change(client, key, msg)
+                elif writable_state[key] == 'int':
+                    self.listen_for_int_change(client, key, msg)
 
         client = mqtt.Client()
         client.on_connect = on_connect
@@ -99,27 +109,8 @@ class MqttPublishProcess(Process):
         self.port = port
         self.prefix = prefix
 
-        self.prev = {
-            'avgtemp': None,
-            'settemp': None,
-            'steam_mode': None,
-            'brewing': None,
-            'hot_water': None,
-            'ignore_buttons': None,
-            'is_awake': None,
-            'use_pump_tunings': None,
-            'use_preinfusion': None,
-            'tunings': None,
-            'dynamic_kp': None,
-            'dynamic_ki': None,
-            'dynamic_kd': None,
-            'dynamic_responsiveness': None,
-            'scale_weight': None,
-            'target_weight': None,
-            'brew_to_weight': None,
-            'keep_scale_connected': None,
-            'shot_time': None,
-        }
+        keys = list(writable_state.keys()) + list(readonly_state.keys())
+        self.prev = {k: None for k in keys}
 
     def run(self):
         state = self.state
@@ -135,60 +126,29 @@ class MqttPublishProcess(Process):
         i = 0
 
         while True:
-            if self.state['last_brew_time'] is not None:
-                shot_time = round(self.state['last_brew_time'], 2)
-            elif self.state['brew_start'] is not None:
-                shot_time = round(time() - self.state['brew_start'])
-            else:
-                shot_time = 0
-
             if i % 300 == 0:
-                client.publish(self.prefix + "/shot_time", shot_time)
-                self.prev['shot_time'] = shot_time
+                for key in writable_state:
+                    self.publish_regardless(client, key)
 
-                self.publish_regardless(client, 'avgtemp')
-                self.publish_regardless(client, 'settemp')
-                self.publish_regardless(client, 'steam_mode')
-                self.publish_regardless(client, 'brewing')
-                self.publish_regardless(client, 'hot_water')
-                self.publish_regardless(client, 'ignore_buttons')
-                self.publish_regardless(client, 'is_awake')
-                self.publish_regardless(client, 'use_preinfusion')
-                self.publish_regardless(client, 'use_pump_tunings')
-                self.publish_regardless(client, 'tunings')
-                self.publish_regardless(client, 'dynamic_kp')
-                self.publish_regardless(client, 'dynamic_ki')
-                self.publish_regardless(client, 'dynamic_kd')
-                self.publish_regardless(client, 'dynamic_responsiveness')
-                self.publish_regardless(client, 'scale_weight')
-                self.publish_regardless(client, 'target_weight')
-                self.publish_regardless(client, 'brew_to_weight')
-                self.publish_regardless(client, 'keep_scale_connected')
-
+                for key in readonly_state:
+                    if callable(readonly_state[key]):
+                        value = readonly_state[key](self.state)
+                        client.publish(self.prefix + "/" + key, value)
+                        self.prev[key] = value
+                    else:
+                        self.publish_regardless(client, key)
             else:
-                if shot_time != self.prev['shot_time']:
-                    client.publish(self.prefix + "/shot_time", shot_time)
-                    self.prev['shot_time'] = shot_time
+                for key in writable_state:
+                    self.publish(client, key)
 
-                #if i % 60 == 0 or (self.state['is_awake'] and i % 5 == 0):
-                self.publish(client, 'avgtemp')
-                self.publish(client, 'settemp')
-                self.publish(client, 'steam_mode')
-                self.publish(client, 'brewing')
-                self.publish(client, 'hot_water')
-                self.publish(client, 'ignore_buttons')
-                self.publish(client, 'is_awake')
-                self.publish(client, 'use_preinfusion')
-                self.publish(client, 'use_pump_tunings')
-                self.publish(client, 'tunings')
-                self.publish(client, 'dynamic_kp')
-                self.publish(client, 'dynamic_ki')
-                self.publish(client, 'dynamic_kd')
-                self.publish(client, 'dynamic_responsiveness')
-                self.publish(client, 'scale_weight')
-                self.publish(client, 'target_weight')
-                self.publish(client, 'brew_to_weight')
-                self.publish(client, 'keep_scale_connected')
+                for key in readonly_state:
+                    if callable(readonly_state[key]):
+                        value = readonly_state[key](self.state)
+                        if value != self.prev[key]:
+                            client.publish(self.prefix + "/" + key, value)
+                            self.prev[key] = value
+                    else:
+                        self.publish(client, key)
 
             i += 1
             sleep(1)

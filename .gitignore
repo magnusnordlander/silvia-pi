@@ -6,3 +6,4 @@ restart.sh
 *.debug.js
 .idea
 venv
+emulated_display.jpg

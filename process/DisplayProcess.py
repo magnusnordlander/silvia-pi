@@ -55,12 +55,13 @@ class DisplayProcess(Process):
             else:
                 draw.text((x, top + 0), "T: {}°C (> {}°C)".format(round(self.state['avgtemp'], 1), round(self.state['settemp'])), font=font, fill=255)
             draw.text((x, top + 8), "Time: {} s".format(shot_time), font=font, fill=255)
+            scale_weight = round(self.state['scale_weight'] or 0, 1) if self.state['keep_scale_connected'] else "*"
             if self.state['brew_to_weight']:
-                draw.text((x, top + 16), "M: {} g > {} g".format(round(self.state['scale_weight'] or 0, 1), round(self.state['target_weight'] or 0, 1)), font=font, fill=255)
+                draw.text((x, top + 16), "M: {} g > {} g".format(scale_weight, round(self.state['target_weight'] or 0, 1)), font=font, fill=255)
             else:
-                draw.text((x, top + 16), "M: {} g (> {} g)".format(round(self.state['scale_weight'] or 0, 1), round(self.state['target_weight'] or 0, 1)), font=font, fill=255)
-            draw.text((x, top + 24), "Pre-infusion: {}".format('On' if self.state['use_preinfusion'] else 'Off'), font=font, fill=255)
-            draw.text((x, top + 32), "Tunings: {}".format(self.state['tunings']), font=font, fill=255)
+                draw.text((x, top + 16), "M: {} g (> {} g)".format(scale_weight, round(self.state['target_weight'] or 0, 1)), font=font, fill=255)
+            draw.text((x, top + 24), "PI: {}, T: {}, D: {}".format('Y' if self.state['use_preinfusion'] else 'N', round(self.state['preinfusion_time'], 1), round(self.state['dwell_time'], 1)), font=font, fill=255)
+            draw.text((x, top + 32), "Tunings: {}".format(self.state['tunings'].capitalize()), font=font, fill=255)
             draw.text((x, top + 40), "PID: {}".format(self.state['avgpid']), font=font, fill=255)
             if self.state['ignore_buttons']:
                 draw.text((x, top + 48), "Buttons ignored", font=font, fill=255)
