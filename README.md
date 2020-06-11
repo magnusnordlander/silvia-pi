@@ -41,7 +41,7 @@ Caveat emptor.
 
 ### In progress (not always in pushed branches)
 * Add reaction time compensation for weighted shots
-* 128x64 SPI OLED display
+* 128x64 SPI OLED display *Performance problems. This'll probably require the asyncio refactoring to work well.*
 * asyncio instead of multiprocess
 
 ### If I feel like it
@@ -49,10 +49,53 @@ Caveat emptor.
 * Liquid level sensor
     * eTape?
 * Pressure gauge
-    * Sensata 116CP or 60CP seems like good choices, but hard to come by
-    * BDSensors DMP331P or DS200P could also be good choices
+    * ~~Sensata 116CP or 60CP seems like good choices, but hard to come by~~ Haven't even been able to find in small quantities, not to mention that I don't know the price
+    * ~~BDSensors DMP331P or DS200P could also be good choices~~ Too expensive (~$400)
+    * Honeywell MIP series will do. Given that it tops out at 125°C, it'll have to be mounted by the pump though.
+      * Ideally MIPAG1XX016BSAAX or MIPAG1XX016BAAAX, but it'll likely be MIPAF1XX250PSAAX due to it being easier to source
+      * https://www.mouser.se/datasheet/2/187/honeywell-sensing-heavy-duty-pressure-mip-series-d-1760329.pdf
+      * Also needs an ADC
 * GraphQL API
 * React frontend
+
+### IO Allocations
+* SPI0CS1 (CS Pin 5): MAX31865 temp sensor 1
+   * GPIO10
+   * GPIO9
+   * GPIO11
+   * CS: GPIO5 (Why aren't I using the standard GPIO8? reallocate)
+* SPI0CS2: MAX31865 temp sensor 2 (not yet implemented)
+   * GPIO10
+   * GPIO9
+   * GPIO11
+   * CS: GPI07
+* SPI1CS1: SSD1302 128x64 SPI OLED (implementation in progress)
+   * GPIO19
+   * GPIO20
+   * GPIO21
+   * CS: GPIO18
+* I2C: ADC for pressure sensor (not yet implemented)
+   * GPIO0
+   * GPIO1
+   * GPIO2
+   * GPIO3
+* GPIO18: Heating element (via BSS138) *Conflict with standard SPI1CE0, reallocate to GPIO4*
+* GPIO14: Solenoid (via BSS138)
+* GPIO15: Pump (via BSS138)
+* GPIO21: Brew button *Conflict with SPI1, reallocate to GPIO5*
+* GPIO16: Steam button *Conflict with SPI1, reallocate to GPIO6*
+* GPIO20: Water button *Reallocate to GPIO13
+
+#### Free GPIO pins
+* GPIO12
+* GPIO16
+* GPIO17
+* GPIO22
+* GPIO23
+* GPIO24
+* GPIO25
+* GPIO26
+* GPIO27
 
 ## Original README (Mostly not applicable anymore)
 
