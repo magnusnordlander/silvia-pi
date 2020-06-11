@@ -55,6 +55,7 @@ Caveat emptor.
       * Ideally MIPAG1XX016BSAAX or MIPAG1XX016BAAAX, but it'll likely be MIPAF1XX250PSAAX due to it being easier to source
       * https://www.mouser.se/datasheet/2/187/honeywell-sensing-heavy-duty-pressure-mip-series-d-1760329.pdf
       * Also needs an ADC
+* ADC for Liquid level sensor and pressure gauge: Adafruit ADS1015. Needs additional BSS138.
 * GraphQL API
 * React frontend
 
@@ -84,7 +85,7 @@ Caveat emptor.
 * GPIO15: Pump (via BSS138)
 * GPIO21: Brew button *Conflict with SPI1, reallocate to GPIO5*
 * GPIO16: Steam button *Conflict with SPI1, reallocate to GPIO6*
-* GPIO20: Water button *Reallocate to GPIO13
+* GPIO20: Water button *Reallocate to GPIO13*
 
 #### Free GPIO pins
 * GPIO12
