@@ -16,17 +16,9 @@ async def logger(hub, ignored_topics=frozenset()):
                 print(f'Reader for key {key} got message: {msg}')
 
 if __name__ == '__main__':
-    l = logging.getLogger('bleak.backends.corebluetooth.PeripheralDelegate')
-    l.setLevel(logging.INFO)
-
-    l = logging.getLogger('bleak.backends.corebluetooth.client')
-    l.setLevel(logging.INFO)
-
-    l = logging.getLogger('bleak.backends.corebluetooth.CentralManagerDelegate')
-    l.setLevel(logging.INFO)
-
-    l = logging.getLogger('bleak.backends.bluezdbus.client')
-    l.setLevel(logging.INFO)
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    for l in loggers:
+        l.setLevel(logging.INFO)
 
     loop = asyncio.get_event_loop()
     hub = PubSub.Hub()
