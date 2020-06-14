@@ -2,6 +2,7 @@ import asyncio
 from utils import topics, ResizableRingBuffer, PubSub
 from asyncio_mqtt import Client, MqttError
 from contextlib import AsyncExitStack, asynccontextmanager
+import time
 
 class MQTTProxy:
     def __init__(self, hub, server, prefix="fakesilvia/", debug_mappings=False):
@@ -9,11 +10,12 @@ class MQTTProxy:
         self.prefix = prefix
 
         self.client = Client(server)
+        self.last_send = {}
 
         self.mappings = {
-            topics.TOPIC_AVERAGE_TEMPERATURE: Mapping('avgtemp', formatter=Mapping.FloatFormatter),
-            topics.TOPIC_PID_AVERAGE_VALUE: Mapping('avgpid', formatter=Mapping.FloatFormatter),
-            topics.TOPIC_SCALE_WEIGHT: Mapping('scale_weight', formatter=Mapping.FloatFormatter),
+            topics.TOPIC_AVERAGE_TEMPERATURE: Mapping('avgtemp', formatter=Mapping.FloatFormatter, throttle=3),
+            topics.TOPIC_PID_AVERAGE_VALUE: Mapping('avgpid', formatter=Mapping.FloatFormatter, throttle=3),
+            topics.TOPIC_SCALE_WEIGHT: Mapping('scale_weight', formatter=Mapping.FloatFormatter, throttle=1),
             topics.TOPIC_SCALE_CONNECTED: Mapping('scale_is_connected'),
             topics.TOPIC_CURRENT_BREW_TIME_UPDATE: Mapping('current_brew_time', formatter=Mapping.FloatFormatter),
             topics.TOPIC_LAST_BREW_DURATION: Mapping('shot_time', formatter=Mapping.FloatFormatter),
@@ -83,7 +85,17 @@ class MQTTProxy:
                 if mapping.mode == Mapping.MODE_WRITEONLY:
                     continue
 
+                if mapping.throttle:
+                    try:
+                        last_send = self.last_send[mapping.key]
+                    except KeyError:
+                        last_send = None
+
+                    if last_send + mapping.throttle > time.time():
+                        continue
+
                 await self.client.publish(self.write_topic(mapping.key), mapping.formatter.to_mqtt(value))
+                self.last_send[mapping.key] = time.time()
 
     def write_topic(self, key):
         return "{}{}".format(self.prefix, key)
@@ -102,7 +114,7 @@ class Formatter:
 
 
 class Mapping:
-    FloatFormatter = Formatter(float, float)
+    FloatFormatter = Formatter(lambda val: round(val, 2), float)
     StringFormatter = Formatter(str, str)
     IntFormatter = Formatter(int, int)
     BoolFormatter = Formatter(bool, lambda val: val == "True")
@@ -111,8 +123,8 @@ class Mapping:
     MODE_WRITEONLY = 'writeonly'
     MODE_READWRITE = 'readwrite'
 
-    def __init__(self, key, mode=None, formatter=None, throttle_frequency=None):
-        self.throttle_frequency = throttle_frequency
+    def __init__(self, key, mode=None, formatter=None, throttle=None):
+        self.throttle = throttle
         self.formatter = formatter if formatter is not None else self.BoolFormatter
         self.mode = mode if mode is not None else self.MODE_READONLY
         self.key = key
