@@ -39,6 +39,10 @@ if __name__ == '__main__':
         p = pump.GpioPump(conf.pump_pin)
         v = solenoid.GpioSolenoid(conf.solenoid_pin)
 
+    b.heat_off()
+    p.stop_pumping()
+    v.close()
+
     pins = PigpioPins(loop, hub)
     temp_sensor = TemperatureSensor(hub, s)
     steam_control = SteamControlSignal(hub)
@@ -80,6 +84,11 @@ if __name__ == '__main__':
         topics.TOPIC_STEAM_HE_ON,
         topics.TOPIC_HE_ON
     ])))
-    loop.run_until_complete(asyncio.gather(*futures))
 
-    loop.run_forever()
+    try:
+        loop.run_until_complete(asyncio.gather(*futures))
+        loop.run_forever()
+    finally:
+        b.heat_off()
+        p.stop_pumping()
+        v.close()
