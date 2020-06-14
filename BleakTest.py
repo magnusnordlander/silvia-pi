@@ -1,6 +1,14 @@
 import sys
 import asyncio
+import logging
 from bleak import BleakClient
+
+logging.root.setLevel(logging.DEBUG)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+FORMAT = "%(asctime)-15s %(name)-8s %(levelname)s: %(message)s"
+handler.setFormatter(logging.Formatter(fmt=FORMAT))
+logging.root.addHandler(handler)
 
 async def run(loop):
     print("Running")
