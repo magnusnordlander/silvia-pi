@@ -89,7 +89,7 @@ class MQTTProxy:
                     try:
                         last_send = self.last_send[mapping.key]
                     except KeyError:
-                        last_send = None
+                        last_send = 0
 
                     if last_send + mapping.throttle > time.time():
                         continue
