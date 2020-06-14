@@ -81,9 +81,8 @@ class AcaiaScaleSensor:
                                 self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
                                 await asyncio.sleep(3)
                             else:
-                                await client.disconnect()
-                                self.hub.publish(topics.TOPIC_SCALE_CONNECTED, False)
                                 break
+                    self.hub.publish(topics.TOPIC_SCALE_CONNECTED, False)
                 except BleakError:
                     continue
             else:
