@@ -9,3 +9,4 @@ from .MQTTProxy import MQTTProxy
 from .ActuatorControl import ActuatorControl
 from .BrewControl import BrewControl
 from .BrewTimer import BrewTimer
+from .WeightedShotController import WeightedShotController

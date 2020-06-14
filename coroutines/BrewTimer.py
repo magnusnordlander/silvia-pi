@@ -25,5 +25,11 @@ class BrewTimer:
                 self.start_time = None
                 self.hub.publish(topics.TOPIC_LAST_BREW_DURATION, duration)
 
+    async def update_current_brew_duration(self):
+        while True:
+            if self.start_time:
+                self.hub.publish(topics.TOPIC_CURRENT_BREW_TIME_UPDATE, time.time() - self.start_time)
+            await asyncio.sleep(1)
+
     def futures(self):
-        return [self.start_brew_timer(), self.stop_brew_timer()]
+        return [self.start_brew_timer(), self.stop_brew_timer(), self.update_current_brew_duration()]

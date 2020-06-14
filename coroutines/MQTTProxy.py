@@ -4,18 +4,26 @@ from asyncio_mqtt import Client, MqttError
 from contextlib import AsyncExitStack, asynccontextmanager
 
 class MQTTProxy:
-    def __init__(self, hub, debug_mappings=False):
+    def __init__(self, hub, server, prefix="fakesilvia/", debug_mappings=False):
         self.hub = hub
-        self.prefix = "fakesilvia/"
+        self.prefix = prefix
 
-        self.client = Client("192.168.10.66")
+        self.client = Client(server)
 
         self.mappings = {
             topics.TOPIC_AVERAGE_TEMPERATURE: Mapping('avgtemp', formatter=Mapping.FloatFormatter),
             topics.TOPIC_PID_AVERAGE_VALUE: Mapping('avgpid', formatter=Mapping.FloatFormatter),
             topics.TOPIC_SCALE_WEIGHT: Mapping('scale_weight', formatter=Mapping.FloatFormatter),
             topics.TOPIC_SCALE_CONNECTED: Mapping('scale_is_connected'),
+            topics.TOPIC_CURRENT_BREW_TIME_UPDATE: Mapping('current_brew_time', formatter=Mapping.FloatFormatter),
+            topics.TOPIC_LAST_BREW_DURATION: Mapping('shot_time', formatter=Mapping.FloatFormatter),
             topics.TOPIC_STEAM_MODE: Mapping('steam_mode', mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_CONNECT_TO_SCALE: Mapping('keep_scale_connected', mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_ENABLE_WEIGHTED_SHOT: Mapping('brew_to_weight', mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_TARGET_WEIGHT: Mapping('target_weight', formatter=Mapping.FloatFormatter, mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_USE_PREINFUSION: Mapping('use_preinfusion', mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_SET_POINT: Mapping('settemp', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
+            topics.TOPIC_HE_ENABLED: Mapping('is_awake', mode=Mapping.MODE_READWRITE),
         }
 
         if debug_mappings:
@@ -91,7 +99,6 @@ class Formatter:
     def __init__(self, to_mqtt, from_mqtt):
         self.from_mqtt = from_mqtt
         self.to_mqtt = to_mqtt
-
 
 
 class Mapping:

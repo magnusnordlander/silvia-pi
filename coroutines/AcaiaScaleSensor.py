@@ -1,13 +1,17 @@
 import asyncio
-from bleak import BleakClient
-from utils import topics
+from bleak import BleakClient, BleakError
+from utils import topics, PubSub
 import pyacaia
 import sys
 
+
 class AcaiaScaleSensor:
-    def __init__(self, hub):
+    def __init__(self, hub, address):
         self.hub = hub
-        self.address = "9B0F0A71-568C-4DB5-9002-F1D09B240D0A" if sys.platform == "darwin" else "00:1c:97:1a:a0:2f"
+
+        self.keep_connected = False
+
+        self.address = address
         self.ACAIA_CHR_UUID = "00002a80-0000-1000-8000-00805f9b34fb"
         self.MAGIC1 = 0xef
         self.MAGIC2 = 0xdd
@@ -51,26 +55,39 @@ class AcaiaScaleSensor:
             return
 
         if msg.msgType == 5:
-            self.hub.publish(topics.TOPIC_SCALE_WEIGHT, msg.value)
+            self.hub.debounce_publish(topics.TOPIC_SCALE_WEIGHT, msg.value)
         else:
             pass
 
+    async def update_keep_connected(self):
+        with PubSub.Subscription(self.hub, topics.TOPIC_CONNECT_TO_SCALE) as queue:
+            while True:
+                self.keep_connected = await queue.get()
+
     async def run(self, loop):
-        async with BleakClient(self.address, loop=loop) as client:
-            x = await client.is_connected()
-            self.hub.publish(topics.TOPIC_SCALE_CONNECTED, True)
+        while True:
+            if self.keep_connected:
+                try:
+                    async with BleakClient(self.address, loop=loop) as client:
+                        await client.is_connected()
+                        self.hub.publish(topics.TOPIC_SCALE_CONNECTED, True)
 
-            await client.start_notify(self.ACAIA_CHR_UUID, self.notification_handler)
-            await self.ident(client)
-            i = 0
-            while i < 10:
-                i += 1
-                await self.send_heartbeat(client)
-                self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
-                await asyncio.sleep(5)
-
-            await client.disconnect()
-            self.hub.publish(topics.TOPIC_SCALE_CONNECTED, False)
+                        await client.start_notify(self.ACAIA_CHR_UUID, self.notification_handler)
+                        await self.ident(client)
+                        while True:
+                            connected = await client.is_connected()
+                            if connected and self.keep_connected:
+                                await self.send_heartbeat(client)
+                                self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
+                                await asyncio.sleep(3)
+                            else:
+                                await client.disconnect()
+                                self.hub.publish(topics.TOPIC_SCALE_CONNECTED, False)
+                                break
+                except BleakError:
+                    continue
+            else:
+                await asyncio.sleep(1)
 
     def futures(self, loop):
-        return [self.run(loop)]
+        return [self.run(loop), self.update_keep_connected()]

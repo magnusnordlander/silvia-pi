@@ -7,7 +7,7 @@ class ButtonControls:
         self.hub = hub
 
     async def update_steam_mode(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_WATER_BUTTON) as queue:
+        with PubSub.Subscription(self.hub, topics.TOPIC_STEAM_BUTTON) as queue:
             while True:
                 steam_button = await queue.get()
                 self.hub.publish(topics.TOPIC_STEAM_MODE, steam_button)
@@ -21,5 +21,11 @@ class ButtonControls:
                 else:
                     self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
+    async def start_stop_pump(self):
+        with PubSub.Subscription(self.hub, topics.TOPIC_WATER_BUTTON) as queue:
+            while True:
+                water_button = await queue.get()
+                self.hub.publish(topics.TOPIC_PUMP_ON, water_button)
+
     def futures(self):
-        return [self.update_steam_mode(), self.start_stop_brewing()]
+        return [self.update_steam_mode(), self.start_stop_brewing(), self.start_stop_pump()]

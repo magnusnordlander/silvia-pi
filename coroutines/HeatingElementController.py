@@ -7,16 +7,17 @@ class HeatingElementController:
         self.boiler = boiler
         self.hub = hub
         self.steam_mode = False
+        self.he_enabled = False
 
     async def update_he_from_pid(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_PID_AVERAGE_VALUE) as queue:
             while True:
                 avgpid = await queue.get()
                 if not self.steam_mode:
-                    if avgpid >= 100:
+                    if avgpid >= 100 and self.he_enabled:
                         self.he_on()
                         await asyncio.sleep(1)
-                    elif 0 < avgpid < 100:
+                    elif 0 < avgpid < 100 and self.he_enabled:
                         self.he_on()
                         await asyncio.sleep(avgpid / 100.)
 
@@ -44,7 +45,7 @@ class HeatingElementController:
             while True:
                 steam_he_on = await queue.get()
                 if self.steam_mode:
-                    if steam_he_on:
+                    if steam_he_on and self.he_enabled:
                         self.boiler.heat_on()
                     else:
                         self.boiler.heat_off()
@@ -54,5 +55,15 @@ class HeatingElementController:
             while True:
                 self.steam_mode = await queue.get()
 
+    async def update_he_enabled(self):
+        with PubSub.Subscription(self.hub, topics.TOPIC_HE_ENABLED) as queue:
+            while True:
+                self.he_enabled = await queue.get()
+
     def futures(self):
-        return [self.update_he_from_steam(), self.update_he_from_pid(), self.update_steam_mode()]
+        return [
+            self.update_he_from_steam(),
+            self.update_he_from_pid(),
+            self.update_steam_mode(),
+            self.update_he_enabled(),
+        ]

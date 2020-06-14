@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 from utils.const import *
 
 # Raspberry Pi SPI Port and Device
@@ -29,9 +30,8 @@ except NotImplementedError:
     water_button_pin = 20
 
 # Weighted shots
-acaia_mac = "00:1c:97:1a:a0:2f"
-weighted_shot_reaction_compensation = -2  #grams
-disable_buttons_during_weighted_shot = True
+acaia_mac = "9B0F0A71-568C-4DB5-9002-F1D09B240D0A" if sys.platform == "darwin" else "00:1c:97:1a:a0:2f"
+weighted_shot_reaction_compensation = -2  # grams
 
 # Default temperatures
 set_temp = 105.
@@ -39,14 +39,9 @@ steam_low_temp = 139.
 steam_high_temp = 140.
 
 # Pre-infusion settings
-use_preinfusion = False  # Just a default
+use_preinfusion = False # Just a default
 preinfusion_time = 1.2
 dwell_time = 2.5
-
-# Main loop sample rate in seconds
-fast_sample_time = 0.01
-slow_sample_time = 0.1
-factor = 10
 
 # PID Proportional, Integral, and Derivative values
 use_pump_tunings = True
@@ -72,8 +67,5 @@ tunings = {
     },
 }
 
-#Web/REST Server Options
-port = 8080
-
 mqtt_server = "192.168.10.66"
-mqtt_prefix = "fakesilvia"
+mqtt_prefix = "silvia/"

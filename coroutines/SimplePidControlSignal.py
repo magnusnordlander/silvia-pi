@@ -6,10 +6,10 @@ from utils import ResizableRingBuffer
 
 
 class SimplePidControlSignal:
-    def __init__(self, hub, temperature_update_interval=0.25):
+    def __init__(self, hub, tunings, temperature_update_interval=0.25, default_setpoint=105):
         self.temperature_update_interval = temperature_update_interval
-        self.setpoint = 105
-        self.tunings = (3.4, 0.3, 40.0)
+        self.setpoint = default_setpoint
+        self.tunings = tunings
         self.responsiveness = 10
         self.hub = hub
         self.avgtemp = 20
@@ -19,6 +19,11 @@ class SimplePidControlSignal:
             while True:
                 self.avgtemp = await queue.get()
 
+    async def update_setpoint(self):
+        with PubSub.Subscription(self.hub, topics.TOPIC_SET_POINT) as queue:
+            while True:
+                self.setpoint = await queue.get()
+
     async def update_pid_control(self):
         pid = simple_pid_fork.PID(setpoint=self.setpoint, windup_limits=(-20, 20))
         pid.tunings = self.tunings
@@ -26,18 +31,16 @@ class SimplePidControlSignal:
 
         loop = asyncio.get_running_loop()
 
-        pidout = 0
         pidhist = ResizableRingBuffer(self.responsiveness)
-        avgpid = 0.
-        previous_setpoint = self.setpoint
-        previous_tunings = self.tunings
-        previous_responsiveness = self.responsiveness
         last_advice = 0
 
         try:
             with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_TEMPERATURE) as queue:
                 while True:
                     avgtemp = await queue.get()
+
+                    if self.setpoint != pid.setpoint:
+                        pid.setpoint = self.setpoint
 
                     pidout = pid(avgtemp)
                     pidhist.append(pidout)
@@ -59,4 +62,4 @@ class SimplePidControlSignal:
             pid.reset()
 
     def futures(self):
-        return [self.update_pid_control(), self.update_avg_temp()]
+        return [self.update_pid_control(), self.update_avg_temp(), self.update_setpoint()]

@@ -33,6 +33,10 @@ TOPIC_SCALE_HEARTBEAT_SENT = "advice/scale/heartbeat_sent"
 
 # Try to keep the scale connected (or disconnect if this turns false)
 TOPIC_CONNECT_TO_SCALE = "advice/scale/keep_connected"
+TOPIC_TARGET_WEIGHT = "advice/scale/target_weight"
+TOPIC_ENABLE_WEIGHTED_SHOT = "advice/scale/enable_weighted_shot"
+
+TOPIC_SET_POINT = "advice/set_point"
 
 # The scale *is* connected
 TOPIC_SCALE_CONNECTED = "mode/scale_connected"
@@ -44,5 +48,11 @@ TOPIC_HE_ON = "status/he_on"
 # or PID inputs
 TOPIC_STEAM_MODE = "mode/steam_mode"
 
+TOPIC_USE_PREINFUSION = "mode/use_preinfusion"
+TOPIC_PREINFUSION_TIME = "mode/use_preinfusion/preinfusion_time"
+TOPIC_DWELL_TIME = "mode/use_preinfusion/dwell_time"
+TOPIC_HE_ENABLED = "mode/he_enabled"
+
 TOPIC_LAST_BREW_DURATION = "status/last_brew_duration"
 TOPIC_CURRENT_BREW_START_TIME = "status/current_brew_start_time"
+TOPIC_CURRENT_BREW_TIME_UPDATE = "status/current_brew_duration"
