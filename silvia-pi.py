@@ -25,6 +25,9 @@ if __name__ == '__main__':
     l = logging.getLogger('bleak.backends.corebluetooth.CentralManagerDelegate')
     l.setLevel(logging.INFO)
 
+    l = logging.getLogger('bleak.backends.bluezdbus.client')
+    l.setLevel(logging.INFO)
+
     loop = asyncio.get_event_loop()
     hub = PubSub.Hub()
 
@@ -61,10 +64,10 @@ if __name__ == '__main__':
     brew_timer = BrewTimer(hub)
     weighted_shots = WeightedShotController(hub)
 
-#    loop.run_until_complete(asyncio.gather(*pins.pre_futures()))
+    loop.run_until_complete(asyncio.gather(*pins.pre_futures()))
 
     futures = []
-#    futures += pins.futures()
+    futures += pins.futures()
     futures += temp_sensor.futures()
     futures += steam_control.futures()
     futures += he_controller.futures()
