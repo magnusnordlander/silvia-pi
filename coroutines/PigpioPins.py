@@ -3,10 +3,8 @@ import apigpio
 import config as conf
 from utils import topics
 from functools import partial
-import time
 
-@apigpio.Debounce()
-async def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
+async def _input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     # Wait 5ms then see if it's still the same
     await asyncio.sleep(0.005)
     new_level = await pi.read(gpio)
@@ -15,6 +13,9 @@ async def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     else:
         print("False button press on "+topic)
 
+@apigpio.Debounce()
+def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi, loop):
+    loop.run(_input_forward_to_hub(gpio, level, tick, hub, topic, pi))
 
 class PigpioPins:
     def __init__(self, loop, hub):
@@ -33,7 +34,7 @@ class PigpioPins:
         for pin in pins:
             yield from pi.set_mode(pin, apigpio.INPUT)
             yield from pi.set_pull_up_down(pin, apigpio.PUD_DOWN)
-            yield from pi.add_callback(pin, edge=apigpio.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi))
+            yield from pi.add_callback(pin, edge=apigpio.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi, loop=self.loop))
 
     def pre_futures(self):
         address = ('192.168.10.107', 8888)
