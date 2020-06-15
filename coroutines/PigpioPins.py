@@ -15,7 +15,7 @@ async def _input_forward_to_hub(gpio, level, tick, hub, topic, pi):
 
 @apigpio.Debounce()
 def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi, loop):
-    loop.run(_input_forward_to_hub(gpio, level, tick, hub, topic, pi))
+    loop.run_until_complete(_input_forward_to_hub(gpio, level, tick, hub, topic, pi))
 
 class PigpioPins:
     def __init__(self, loop, hub):
