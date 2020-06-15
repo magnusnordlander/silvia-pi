@@ -11,6 +11,8 @@ def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     time.sleep(0.005)
     if pi.read(gpio) == level:
         hub.publish(topic, level == 1)
+    else:
+        print("False button press on "+topic)
 
 
 class PigpioPins:
