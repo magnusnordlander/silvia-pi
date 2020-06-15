@@ -1,5 +1,7 @@
 """MQTT Topics"""
 
+TOPIC_BUTTON_PROXY = "sensor/button/_proxy"
+
 # Hardware button states
 TOPIC_COFFEE_BUTTON = "sensor/button/coffee"
 TOPIC_WATER_BUTTON = "sensor/button/water"
