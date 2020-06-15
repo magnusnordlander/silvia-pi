@@ -6,10 +6,11 @@ from functools import partial
 import time
 
 @apigpio.Debounce()
-def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
+async def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     # Wait 5ms then see if it's still the same
-    time.sleep(0.005)
-    if pi.read(gpio) == level:
+    await asyncio.sleep(0.005)
+    new_level = await pi.read(gpio)
+    if new_level == level:
         hub.publish(topic, level == 1)
     else:
         print("False button press on "+topic)
