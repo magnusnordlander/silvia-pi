@@ -1,13 +1,13 @@
 import asyncio
 import apigpio
 import config as conf
-from utils import topics
+from utils import topics, PubSub
 from functools import partial
 import time
 
 @apigpio.Debounce()
 def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
-    hub.publish(topic, level == 1)
+    hub.publish("button/_proxy", (gpio, level, tick, topic))
 
 
 class PigpioPins:
@@ -30,9 +30,20 @@ class PigpioPins:
             yield from pi.set_glitch_filter(pin, 5000)
             yield from pi.add_callback(pin, edge=apigpio.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi))
 
+    async def maybe_update_button(self):
+        with PubSub.Subscription(self.hub, "button/_proxy") as queue:
+            while True:
+                (gpio, level, tick, topic) = await queue.get()
+                await asyncio.sleep(0.005)
+                new_level = await self.pi.read(gpio)
+                if new_level == level:
+                    hub.publish(topic, level == 1)
+                else:
+                    print("False button "+topic)
+
     def pre_futures(self):
         address = ('192.168.10.107', 8888)
         return [self.pi.connect(address)]
 
     def futures(self):
-        return [self.subscribe_to_pins(self.pi, self.hub)]
+        return [self.maybe_update_button(), self.subscribe_to_pins(self.pi, self.hub)]
