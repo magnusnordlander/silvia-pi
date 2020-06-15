@@ -1,14 +1,14 @@
 import asyncio
 import apigpio
 import config as conf
-import logging
 from utils import topics, PubSub
 from functools import partial
 from coroutines import *
 from hardware import boiler, pump, solenoid, temperature_sensor
+import logging
 
 
-async def logger(hub, ignored_topics=frozenset()):
+async def printer(hub, ignored_topics=frozenset()):
     with PubSub.Listener(hub) as queue:
         while True:
             key, msg = await queue.get()
@@ -16,9 +16,8 @@ async def logger(hub, ignored_topics=frozenset()):
                 print(f'Reader for key {key} got message: {msg}')
 
 if __name__ == '__main__':
-    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
-    for l in loggers:
-        l.setLevel(logging.INFO)
+    bleak_logger = logging.getLogger('bleak')
+    bleak_logger.setLevel(logging.INFO)
 
     loop = asyncio.get_event_loop()
     hub = PubSub.Hub()
@@ -71,7 +70,7 @@ if __name__ == '__main__':
     futures += brew_control.futures()
     futures += brew_timer.futures()
     futures += weighted_shots.futures()
-    futures.append(logger(hub, frozenset([
+    futures.append(printer(hub, frozenset([
         topics.TOPIC_CURRENT_TEMPERATURE,
         topics.TOPIC_AVERAGE_TEMPERATURE,
         topics.TOPIC_PID_AVERAGE_VALUE,
