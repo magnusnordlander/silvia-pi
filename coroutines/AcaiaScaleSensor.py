@@ -73,7 +73,7 @@ class AcaiaScaleSensor:
                     async with BleakClient(self.address, loop=loop) as client:
                         self.was_disconnected = False
 
-                        def disconnect_callback(client):
+                        def disconnect_callback(client, future=None):
                             print("Got scale-initiated disconnect signal")
                             self.was_disconnected = True
 

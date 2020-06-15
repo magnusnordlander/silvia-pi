@@ -17,7 +17,7 @@ async def printer(hub, ignored_topics=frozenset()):
 
 if __name__ == '__main__':
     bleak_logger = logging.getLogger('bleak')
-    bleak_logger.setLevel(logging.INFO)
+    bleak_logger.setLevel(logging.WARN)
 
     loop = asyncio.get_event_loop()
     hub = PubSub.Hub()
