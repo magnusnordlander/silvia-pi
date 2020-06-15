@@ -47,7 +47,7 @@ class AcaiaScaleSensor:
 
     def notification_handler(self, sender, data):
         self.add_buffer(data)
-        if len(self.packet) <= 3:
+        if len(self.packet) < 5:
             return
 
         msg = pyacaia.decode(self.packet)
@@ -70,27 +70,33 @@ class AcaiaScaleSensor:
         while True:
             if self.keep_connected:
                 try:
-                    async with BleakClient(self.address, loop=loop) as client:
-                        self.was_disconnected = False
+                    client = BleakClient(self.address, loop=loop)
+                    await client.connect()
+                    self.was_disconnected = False
 
-                        def disconnect_callback(client, future=None):
-                            print("Got scale-initiated disconnect signal")
-                            self.was_disconnected = True
+                    def disconnect_callback(client, future=None):
+                        print("Got disconnected from scale")
+                        self.was_disconnected = True
 
-                        client.set_disconnected_callback(disconnect_callback)
+                    client.set_disconnected_callback(disconnect_callback)
 
-                        await client.is_connected()
-                        self.hub.publish(topics.TOPIC_SCALE_CONNECTED, True)
+                    await client.is_connected()
+                    self.hub.publish(topics.TOPIC_SCALE_CONNECTED, True)
 
-                        await client.start_notify(self.ACAIA_CHR_UUID, self.notification_handler)
-                        await self.ident(client)
-                        while True:
-                            if not self.was_disconnected and self.keep_connected:
-                                await self.send_heartbeat(client)
-                                self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
-                                await asyncio.sleep(3)
-                            else:
-                                break
+                    await client.start_notify(self.ACAIA_CHR_UUID, self.notification_handler)
+                    await self.ident(client)
+                    while True:
+                        if not self.was_disconnected and self.keep_connected:
+                            await self.send_heartbeat(client)
+                            self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
+                            await asyncio.sleep(3)
+                        elif not self.keep_connected:
+                            await client.disconnect()
+                            break
+                        else:  # if self.was_disconnected
+                            # for some weird reason, we *really* can't call client.disconnect in this case when using bluez
+                            break
+
                     self.hub.publish(topics.TOPIC_SCALE_CONNECTED, False)
                 except BleakError:
                     continue
