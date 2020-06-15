@@ -13,6 +13,7 @@ class BrewTimer:
             while True:
                 await queue.get()
                 self.start_time = time.time()
+                self.hub.publish(topics.TOPIC_CURRENT_BREW_START_TIME, self.start_time)
 
     async def stop_brew_timer(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_STOP_BREW) as queue:
@@ -23,6 +24,7 @@ class BrewTimer:
                 except TypeError:
                     continue
                 self.start_time = None
+                self.hub.publish(topics.TOPIC_CURRENT_BREW_START_TIME, None)
                 self.hub.publish(topics.TOPIC_LAST_BREW_DURATION, duration)
 
     async def update_current_brew_duration(self):

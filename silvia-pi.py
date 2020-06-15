@@ -4,7 +4,7 @@ import config as conf
 from utils import topics, PubSub
 from functools import partial
 from coroutines import *
-from hardware import boiler, pump, solenoid, temperature_sensor
+from hardware import boiler, pump, solenoid, temperature_sensor, display
 import logging
 
 
@@ -27,11 +27,13 @@ if __name__ == '__main__':
         b = boiler.EmulatedBoiler(s)
         p = pump.EmulatedPump()
         v = solenoid.EmulatedSolenoid()
+        d = display.EmulatedDisplay('/Users/magnusnordlander/emulated_display.jpg')
     else:
         s = temperature_sensor.Max31865Sensor(conf.temp_sensor_cs_pin, rtd_nominal=100.5)
         b = boiler.GpioBoiler(conf.he_pin)
         p = pump.GpioPump(conf.pump_pin)
         v = solenoid.GpioSolenoid(conf.solenoid_pin)
+        d = display.EmulatedDisplay('/home/pi/silvia-pi/emulated_display.jpg')
 
     b.heat_off()
     p.stop_pumping()
@@ -54,6 +56,7 @@ if __name__ == '__main__':
     )
     brew_timer = BrewTimer(hub)
     weighted_shots = WeightedShotController(hub)
+    display_controller = DisplayController(hub, d)
 
     loop.run_until_complete(asyncio.gather(*pins.pre_futures()))
 
@@ -70,6 +73,7 @@ if __name__ == '__main__':
     futures += brew_control.futures()
     futures += brew_timer.futures()
     futures += weighted_shots.futures()
+    futures += display_controller.futures()
     futures.append(printer(hub, frozenset([
         topics.TOPIC_CURRENT_TEMPERATURE,
         topics.TOPIC_AVERAGE_TEMPERATURE,

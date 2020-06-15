@@ -10,3 +10,4 @@ from .ActuatorControl import ActuatorControl
 from .BrewControl import BrewControl
 from .BrewTimer import BrewTimer
 from .WeightedShotController import WeightedShotController
+from .DisplayController import DisplayController

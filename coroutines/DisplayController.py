@@ -4,7 +4,8 @@ from PIL import Image, ImageDraw, ImageFont
 from time import time
 
 class DisplayController:
-    def __init__(self, hub):
+    def __init__(self, hub, display):
+        self.display = display
         self.hub = hub
         self.avgtemp = 0.0
         self.settemp = 0.0
@@ -28,6 +29,18 @@ class DisplayController:
     async def update_ivars(self):
         map = {
             'avgtemp': topics.TOPIC_AVERAGE_TEMPERATURE,
+            'settemp': topics.TOPIC_SET_POINT,
+            'last_brew_time': topics.TOPIC_LAST_BREW_DURATION,
+            'brew_start': topics.TOPIC_CURRENT_BREW_START_TIME,
+            'he_on': topics.TOPIC_HE_ON,
+            'scale_weight': topics.TOPIC_SCALE_WEIGHT,
+            'scale_is_connected': topics.TOPIC_SCALE_CONNECTED,
+            'brew_to_weight': topics.TOPIC_ENABLE_WEIGHTED_SHOT,
+            'target_weight': topics.TOPIC_TARGET_WEIGHT,
+            'use_preinfusion': topics.TOPIC_USE_PREINFUSION,
+            'preinfusion_time': topics.TOPIC_PREINFUSION_TIME,
+            'dwell_time': topics.TOPIC_DWELL_TIME,
+            'avgpid': topics.TOPIC_PID_AVERAGE_VALUE,
         }
         updaters = []
 
@@ -36,10 +49,7 @@ class DisplayController:
 
         await asyncio.gather(*updaters)
 
-    def run(self):
-        lasttime = time()
-        i = 0
-
+    async def run(self):
         # Create blank image for drawing.
         # Make sure to create image with mode '1' for 1-bit color.
         width = 128
@@ -63,7 +73,7 @@ class DisplayController:
         # Load default font.
         font = ImageFont.load_default()
 
-        while True:  # Loops 10x/second
+        while True:
             # Draw a black filled box to clear the image.
             draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
@@ -87,19 +97,14 @@ class DisplayController:
                 draw.text((x, top + 16), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
             draw.text((x, top + 24), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N', round(self.preinfusion_time, 1), round(self.dwell_time, 1)), font=font, fill=255)
             # draw.text((x, top + 32), "Tunings: {}".format(self.state['tunings'].capitalize()), font=font, fill=255)
-            draw.text((x, top + 40), "PID: {}".format(self.avgpid), font=font, fill=255)
+            draw.text((x, top + 40), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
             # if self.state['ignore_buttons']:
             #     draw.text((x, top + 48), "Buttons ignored", font=font, fill=255)
 
             self.display.draw(image)
 
-            sleeptime = lasttime + self.sample_time - time()
-            if sleeptime < 0:
-                sleeptime = 0
-            sleep(sleeptime)
-            i += 1
-            lasttime = time()
+            await asyncio.sleep(1)
 
 
     def futures(self):
-        return [self.update_ivars()]
+        return [self.update_ivars(), self.run()]
