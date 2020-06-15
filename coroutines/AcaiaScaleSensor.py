@@ -11,6 +11,8 @@ class AcaiaScaleSensor:
 
         self.keep_connected = False
 
+        self.was_disconnected = False
+
         self.address = address
         self.ACAIA_CHR_UUID = "00002a80-0000-1000-8000-00805f9b34fb"
         self.MAGIC1 = 0xef
@@ -69,14 +71,21 @@ class AcaiaScaleSensor:
             if self.keep_connected:
                 try:
                     async with BleakClient(self.address, loop=loop) as client:
+                        self.was_disconnected = False
+
+                        def disconnect_callback(client):
+                            print("Got scale-initiated disconnect signal")
+                            self.was_disconnected = True
+
+                        client.set_disconnected_callback(disconnect_callback)
+
                         await client.is_connected()
                         self.hub.publish(topics.TOPIC_SCALE_CONNECTED, True)
 
                         await client.start_notify(self.ACAIA_CHR_UUID, self.notification_handler)
                         await self.ident(client)
                         while True:
-                            connected = await client.is_connected()
-                            if connected and self.keep_connected:
+                            if not self.was_disconnected and self.keep_connected:
                                 await self.send_heartbeat(client)
                                 self.hub.publish(topics.TOPIC_SCALE_HEARTBEAT_SENT, True)
                                 await asyncio.sleep(3)
