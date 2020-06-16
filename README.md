@@ -21,6 +21,10 @@ Caveat emptor.
 
 ### Upcoming Hardware
 * 128x64 SPI OLED, SSD1302 controller
+* Another Adafruit MAX31865 sensor amplifier
+* PTFM101T1A0 PT100,1.2X4.0,T thermocouple
+* Adafruit ADS1083 4 channel ADC
+* MIPAF1XX250PSAAX pressure transducer
 * ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control, and proportional relays being super pricy)
    * MCPC2450A or similar
    * Adafruit MCP4725 for control
@@ -37,16 +41,12 @@ Caveat emptor.
    * Rewire the entire thing to control the pump, the boiler and the solenoid separately, and read the button states using GPIO
 * Preinfusion
 * Smart scale integration (Acaia)
-
-### In progress (not always in pushed branches)
 * Add reaction time compensation for weighted shots
-* 128x64 SPI OLED display *Performance problems. This'll probably require the asyncio refactoring to work well.*
 * asyncio instead of multiprocess
+* 128x64 SPI OLED display *Performance problems. This'll probably require the asyncio refactoring to work well.*
 
-### If I feel like it
+### In progress
 * Second temperature sensor near group head?
-* Liquid level sensor
-    * eTape?
 * Pressure gauge
     * ~~Sensata 116CP or 60CP seems like good choices, but hard to come by~~ Haven't even been able to find in small quantities, not to mention that I don't know the price
     * ~~BDSensors DMP331P or DS200P could also be good choices~~ Too expensive (~$400)
@@ -55,6 +55,10 @@ Caveat emptor.
       * https://www.mouser.se/datasheet/2/187/honeywell-sensing-heavy-duty-pressure-mip-series-d-1760329.pdf
       * Also needs an ADC
 * ADC for Liquid level sensor and pressure gauge: Adafruit ADS1015. Needs additional BSS138.
+
+### If I feel like it
+* Liquid level sensor
+    * eTape?
 * GraphQL API
 * React frontend
 
