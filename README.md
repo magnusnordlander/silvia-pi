@@ -10,6 +10,11 @@ At some point in the future, I may make this more usable by others, but that poi
 
 Caveat emptor.
 
+### Branches
+* You're currently looking at the master branch. That's most similar to brycesub/silvia-pi (though still pretty different), but still beta quality.
+* There's the asyncio branch, that's a rewrite using asyncio. That's what I'm currently running. Consider that the beta of this beta quality software.
+* There's also the asyncio-display branch, which also adds support for an OLED display. Consider that alpha quality, though that's where I'm currently working.
+
 ### Current Hardware
 * Raspberry Pi Zero W
 * Adafruit PT100 RTD Temperature Sensor Amplifier - MAX31865
