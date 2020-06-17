@@ -10,9 +10,9 @@ At some point in the future, I may make this more usable by others, but that poi
 Caveat emptor.
 
 ### Branches
-* You're currently looking at the master branch. That's most similar to brycesub/silvia-pi (though still pretty different), but still beta quality.
-* There's the asyncio branch, that's a rewrite using asyncio. That's what I'm currently running. Consider that the beta of this beta quality software.
+* You're currently looking at the master branch. It's what I'm currently running on my espresso machine.
 * There's also the asyncio-display branch, which also adds support for an OLED display. Consider that alpha quality, though that's where I'm currently working.
+* There's the multiprocess branch, which is an older version, more architecturally similar to brycesub/silvia-pi
 
 ### Current Hardware
 * Raspberry Pi Zero W
