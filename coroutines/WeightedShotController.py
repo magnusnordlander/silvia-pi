@@ -34,7 +34,7 @@ class WeightedShotController:
                 self.current_weight = weight
 
                 if self.brewing and self.enable_weighted_shots:
-                    nominal_weight = weight + self.weighted_shot_reaction_compensation - self.tare_weight
+                    nominal_weight = weight - self.weighted_shot_reaction_compensation - self.tare_weight
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
