@@ -121,6 +121,8 @@ class MqttPublishProcess(Process):
         client = mqtt.Client()
         client.on_connect = on_connect
 
+        sleep(3)
+
         client.connect(self.server, self.port, 60)
 
         i = 0

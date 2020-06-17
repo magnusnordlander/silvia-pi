@@ -1,4 +1,5 @@
 import random
+import asyncio
 
 class EmulatedSensor:
     """
@@ -15,10 +16,15 @@ class EmulatedSensor:
     def add_energy(self, degrees):
         self.state['water_temp'] += degrees
 
-    def get_temp_c(self):
-        if random.randint(0,4) == 0:
+    def get_update_delay(self):
+        return 0.075
+
+    async def get_temp_c(self):
+        if random.randint(0,2) == 0:
             # some heat dissipation
             dt = self.state['water_temp'] - self.ambient_temperature
-            self.state['water_temp'] -= dt / 100
+            self.state['water_temp'] -= dt / 300
+
+        await asyncio.sleep(0.075)
 
         return self.state['water_temp']

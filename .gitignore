@@ -7,3 +7,4 @@ restart.sh
 .idea
 venv
 emulated_display.jpg
+.DS_Store

@@ -16,8 +16,8 @@ class EmulatedBoiler(object):
         self.cleanup()
 
     def heat_on(self):
-        if self.last_mode == False:
-            print("Heat on")
+        #if self.last_mode == False:
+        #    print("Heat on")
         self.last_mode = True
         if self.last_heat_start is None:
             self.last_heat_start = time.time_ns()
@@ -25,8 +25,8 @@ class EmulatedBoiler(object):
         self.update_heat()
 
     def heat_off(self):
-        if self.last_mode == True:
-            print("Heat off")
+        #if self.last_mode == True:
+        #    print("Heat off")
         self.last_mode = False
         self.update_heat()
         self.last_heat_start = None
@@ -36,7 +36,10 @@ class EmulatedBoiler(object):
             now = time.time_ns()
             diff = now - self.last_heat_start
 
-            self.sensor.add_energy(diff / 200000000)
+            try:
+                self.sensor.add_energy(diff / 200000000)
+            except AttributeError:
+                pass
             self.last_heat_start = now
 
     def cleanup(self):
