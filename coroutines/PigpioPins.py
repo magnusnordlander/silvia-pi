@@ -3,17 +3,17 @@ import apigpio
 import config as conf
 from utils import topics, PubSub
 from functools import partial
-import time
+from coroutines import Base
 
 @apigpio.Debounce()
 def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     hub.publish(topics.TOPIC_BUTTON_PROXY, (gpio, level, tick, topic))
 
 
-class PigpioPins:
-    def __init__(self, loop, hub):
+class PigpioPins(Base):
+    def __init__(self, hub, loop):
+        super().__init__(hub)
         self.loop = loop
-        self.hub = hub
         self.pi = apigpio.Pi(self.loop)
 
     @asyncio.coroutine
@@ -45,5 +45,5 @@ class PigpioPins:
         address = ('192.168.10.107', 8888)
         return [self.pi.connect(address)]
 
-    def futures(self):
+    def futures(self, loop):
         return [self.maybe_update_button(), self.subscribe_to_pins(self.pi, self.hub)]

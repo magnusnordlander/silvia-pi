@@ -1,13 +1,14 @@
 import asyncio
 from utils import topics, PubSub
+from coroutines import Base
 
 
-class HeatingElementController:
+class HeatingElementController(Base):
     def __init__(self, hub, boiler):
+        super().__init__(hub)
         self.boiler = boiler
-        self.hub = hub
-        self.steam_mode = False
-        self.he_enabled = False
+        self.define_ivar('steam_mode', topics.TOPIC_STEAM_MODE, default=False, authoritative=True)
+        self.define_ivar('he_enabled', topics.TOPIC_HE_ENABLED, default=False, authoritative=True)
 
     async def update_he_from_pid(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_PID_AVERAGE_VALUE) as queue:
@@ -50,20 +51,9 @@ class HeatingElementController:
                     else:
                         self.boiler.heat_off()
 
-    async def update_steam_mode(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_STEAM_MODE) as queue:
-            while True:
-                self.steam_mode = await queue.get()
-
-    async def update_he_enabled(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_HE_ENABLED) as queue:
-            while True:
-                self.he_enabled = await queue.get()
-
-    def futures(self):
+    def futures(self, loop):
         return [
+            *super(HeatingElementController, self).futures(loop),
             self.update_he_from_steam(),
             self.update_he_from_pid(),
-            self.update_steam_mode(),
-            self.update_he_enabled(),
         ]

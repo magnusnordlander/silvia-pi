@@ -1,12 +1,12 @@
-import asyncio
-from utils import topics, ResizableRingBuffer, PubSub
+from utils import topics, PubSub
+from coroutines import Base
 
 
-class ActuatorControl:
+class ActuatorControl(Base):
     def __init__(self, hub, pump, solenoid):
+        super().__init__(hub)
         self.solenoid = solenoid
         self.pump = pump
-        self.hub = hub
 
     async def update_pump(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_PUMP_ON) as queue:
@@ -24,5 +24,5 @@ class ActuatorControl:
                 else:
                     self.solenoid.close()
 
-    def futures(self):
+    def futures(self, loop):
         return [self.update_pump(), self.update_solenoid()]

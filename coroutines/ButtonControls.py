@@ -1,10 +1,10 @@
-import asyncio
 from utils import topics, PubSub
+from coroutines import Base
 
 
-class ButtonControls:
+class ButtonControls(Base):
     def __init__(self, hub):
-        self.hub = hub
+        super().__init__(hub)
 
     async def update_steam_mode(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_STEAM_BUTTON) as queue:
@@ -27,5 +27,5 @@ class ButtonControls:
                 water_button = await queue.get()
                 self.hub.publish(topics.TOPIC_PUMP_ON, water_button)
 
-    def futures(self):
+    def futures(self, loop):
         return [self.update_steam_mode(), self.start_stop_brewing(), self.start_stop_pump()]
