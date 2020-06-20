@@ -1,8 +1,7 @@
 import asyncio
-import apigpio
 import config as conf
 from utils import topics, PubSub
-from functools import partial
+import functools
 from coroutines import *
 from hardware import boiler, pump, solenoid, temperature_sensor, display
 import logging
@@ -14,6 +13,12 @@ async def printer(hub, ignored_topics=frozenset()):
             key, msg = await queue.get()
             if key not in ignored_topics:
                 print(f'Reader for key {key} got message: {msg}')
+
+
+async def publish_initial_authoritative_state(coros):
+    await asyncio.sleep(0.5)
+    for coro in coros:
+        coro.publish_authoritative()
 
 if __name__ == '__main__':
     bleak_logger = logging.getLogger('bleak')
@@ -39,41 +44,30 @@ if __name__ == '__main__':
     p.stop_pumping()
     v.close()
 
-    pins = PigpioPins(loop, hub)
-    temp_sensor = TemperatureSensor(hub, s)
-    steam_control = SteamControlSignal(hub)
-    he_controller = HeatingElementController(hub, b)
-    button_controls = ButtonControls(hub)
-    pid_controller = SimplePidControlSignal(hub, (3.4, 0.3, 40.0))
-    scale_sensor = AcaiaScaleSensor(hub, conf.acaia_mac)
-    mqtt_proxy = MQTTProxy(hub, conf.mqtt_server, prefix=conf.mqtt_prefix, debug_mappings=True)
-    actuator_control = ActuatorControl(hub, p, v)
-    brew_control = BrewControl(
-        hub,
-        default_use_preinfusion=conf.use_preinfusion,
-        default_preinfusion_time=conf.preinfusion_time,
-        default_dwell_time=conf.dwell_time
-    )
-    brew_timer = BrewTimer(hub)
-    weighted_shots = WeightedShotController(hub)
-    display_controller = DisplayController(hub, d)
+    coros = [
+        PigpioPins(hub, loop),
+        TemperatureSensor(hub, s),
+        SteamControlSignal(hub),
+        HeatingElementController(hub, b),
+        ButtonControls(hub),
+        SimplePidControlSignal(hub, (3.4, 0.3, 40.0)),
+        AcaiaScaleSensor(hub, conf.acaia_mac),
+        MQTTProxy(hub, conf.mqtt_server, prefix=conf.mqtt_prefix, debug_mappings=True),
+        ActuatorControl(hub, p, v),
+        BrewControl(
+            hub,
+            default_use_preinfusion=conf.use_preinfusion,
+            default_preinfusion_time=conf.preinfusion_time,
+            default_dwell_time=conf.dwell_time
+        ),
+        BrewTimer(hub),
+        WeightedShotController(hub),
+        DisplayController(hub, d),
+    ]
 
-    loop.run_until_complete(asyncio.gather(*pins.pre_futures()))
+    loop.run_until_complete(asyncio.gather(*functools.reduce(lambda carry, coro: carry + coro.pre_futures(), coros, [])))
 
-    futures = []
-    futures += pins.futures()
-    futures += temp_sensor.futures()
-    futures += steam_control.futures()
-    futures += he_controller.futures()
-    futures += button_controls.futures()
-    futures += pid_controller.futures()
-    futures += scale_sensor.futures(loop)
-    futures += mqtt_proxy.futures()
-    futures += actuator_control.futures()
-    futures += brew_control.futures()
-    futures += brew_timer.futures()
-    futures += weighted_shots.futures()
-    futures += display_controller.futures()
+    futures = functools.reduce(lambda carry, coro: carry + coro.futures(loop), coros, [])
     futures.append(printer(hub, frozenset([
         topics.TOPIC_CURRENT_TEMPERATURE,
         topics.TOPIC_AVERAGE_TEMPERATURE,
@@ -82,6 +76,7 @@ if __name__ == '__main__':
         topics.TOPIC_STEAM_HE_ON,
         topics.TOPIC_HE_ON
     ])))
+    futures.append(publish_initial_authoritative_state(coros))
 
     try:
         loop.run_until_complete(asyncio.gather(*futures))

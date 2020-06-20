@@ -1,9 +1,11 @@
 import asyncio
 from utils import topics, ResizableRingBuffer
+from coroutines import Base
 
 
-class TemperatureSensor:
+class TemperatureSensor(Base):
     def __init__(self, hub, sensor, update_interval=0.25):
+        super().__init__(hub)
         self.update_interval = update_interval
         self.sensor = sensor
         self.hub = hub
@@ -23,5 +25,5 @@ class TemperatureSensor:
 
             await asyncio.sleep(self.update_interval - update_delay)
 
-    def futures(self):
+    def futures(self, loop):
         return [self.update_temperature()]

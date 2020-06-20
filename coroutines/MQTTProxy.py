@@ -1,12 +1,14 @@
 import asyncio
-from utils import topics, ResizableRingBuffer, PubSub
-from asyncio_mqtt import Client, MqttError
-from contextlib import AsyncExitStack, asynccontextmanager
+from utils import topics, PubSub
+from asyncio_mqtt import Client
+from contextlib import AsyncExitStack
 import time
+from coroutines import Base
 
-class MQTTProxy:
+
+class MQTTProxy(Base):
     def __init__(self, hub, server, prefix="fakesilvia/", debug_mappings=False):
-        self.hub = hub
+        super().__init__(hub)
         self.prefix = prefix
 
         self.client = Client(server)
@@ -103,7 +105,7 @@ class MQTTProxy:
     def read_topic(self, key):
         return "{}{}/set".format(self.prefix, key)
 
-    def futures(self):
+    def futures(self, loop):
         return [self.run_async()]
 
 

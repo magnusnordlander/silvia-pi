@@ -1,28 +1,18 @@
 import asyncio
 from utils import topics, PubSub
 import simple_pid_fork
-from utils.const import *
 from utils import ResizableRingBuffer
+from coroutines import Base
 
 
-class SimplePidControlSignal:
+class SimplePidControlSignal(Base):
     def __init__(self, hub, tunings, temperature_update_interval=0.25, default_setpoint=105):
+        super().__init__(hub)
         self.temperature_update_interval = temperature_update_interval
-        self.setpoint = default_setpoint
         self.tunings = tunings
         self.responsiveness = 10
-        self.hub = hub
-        self.avgtemp = 20
-
-    async def update_avg_temp(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_TEMPERATURE) as queue:
-            while True:
-                self.avgtemp = await queue.get()
-
-    async def update_setpoint(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_SET_POINT) as queue:
-            while True:
-                self.setpoint = await queue.get()
+        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_TEMPERATURE, default=20)
+        self.define_ivar('setpoint', topics.TOPIC_SET_POINT, default=default_setpoint, authoritative=True)
 
     async def update_pid_control(self):
         pid = simple_pid_fork.PID(setpoint=self.setpoint, windup_limits=(-20, 20))
@@ -61,5 +51,8 @@ class SimplePidControlSignal:
         finally:
             pid.reset()
 
-    def futures(self):
-        return [self.update_pid_control(), self.update_avg_temp(), self.update_setpoint()]
+    def futures(self, loop):
+        return [
+            *super(SimplePidControlSignal, self).futures(loop),
+            self.update_pid_control()
+        ]

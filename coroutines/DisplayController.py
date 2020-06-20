@@ -80,5 +80,5 @@ class DisplayController(Base):
 
             await asyncio.sleep(1)
 
-    def futures(self):
-        return [*super(DisplayController, self).futures(), self.run()]
+    def futures(self, loop):
+        return [*super(DisplayController, self).futures(loop), self.run()]

@@ -8,8 +8,8 @@ class WeightedShotController(Base):
         self.current_weight = None
         self.brewing = False
 
-        self.define_ivar('enable_weighted_shots', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
-        self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT, 0.0)
+        self.define_ivar('enable_weighted_shots', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False, authoritative=True)
+        self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT, 0.0, authoritative=True)
 
         self.weighted_shot_reaction_compensation = -2
         self.tare_weight = 0.0
@@ -39,9 +39,9 @@ class WeightedShotController(Base):
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
-    def futures(self):
+    def futures(self, loop):
         return [
-            *super(WeightedShotController, self).futures(),
+            *super(WeightedShotController, self).futures(loop),
             self.on_start_brew(),
             self.on_stop_brew(),
             self.weight_update(),

@@ -1,13 +1,15 @@
 import asyncio
-from utils import topics, ResizableRingBuffer, PubSub
+from utils import topics, PubSub
+from coroutines import Base
 
 
-class BrewControl:
+class BrewControl(Base):
     def __init__(self, hub, default_use_preinfusion=False, default_preinfusion_time=1.2, default_dwell_time=2.5):
+        super().__init__(hub)
         self.hub = hub
-        self.use_preinfusion = default_use_preinfusion
-        self.preinfusion_time = default_preinfusion_time
-        self.dwell_time = default_dwell_time
+        self.define_ivar('use_preinfusion', topics.TOPIC_USE_PREINFUSION, default=default_use_preinfusion, authoritative=True)
+        self.define_ivar('preinfusion_time', topics.TOPIC_PREINFUSION_TIME, default=default_preinfusion_time, authoritative=True)
+        self.define_ivar('dwell_time', topics.TOPIC_DWELL_TIME, default=default_dwell_time, authoritative=True)
 
     async def start_brew(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_START_BREW) as queue:
@@ -32,26 +34,9 @@ class BrewControl:
                 self.hub.publish(topics.TOPIC_SOLENOID_OPEN, False)
                 self.hub.publish(topics.TOPIC_PUMP_ON, False)
 
-    async def update_use_preinfusion(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_USE_PREINFUSION) as queue:
-            while True:
-                self.use_preinfusion = await queue.get()
-
-    async def update_preinfusion_time(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_PREINFUSION_TIME) as queue:
-            while True:
-                self.preinfusion_time = await queue.get()
-
-    async def update_dwell_time(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_DWELL_TIME) as queue:
-            while True:
-                self.dwell_time = await queue.get()
-
-    def futures(self):
+    def futures(self, loop):
         return [
+            *super(BrewControl, self).futures(loop),
             self.start_brew(),
             self.stop_brew(),
-            self.update_use_preinfusion(),
-            self.update_preinfusion_time(),
-            self.update_dwell_time()
         ]
