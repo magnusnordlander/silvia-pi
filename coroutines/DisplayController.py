@@ -2,52 +2,27 @@ import asyncio
 from utils import topics, PubSub
 from PIL import Image, ImageDraw, ImageFont
 from time import time
+from coroutines import Base
 
-class DisplayController:
+
+class DisplayController(Base):
     def __init__(self, hub, display):
+        super().__init__(hub)
         self.display = display
-        self.hub = hub
-        self.avgtemp = 0.0
-        self.settemp = 0.0
-        self.last_brew_time = None
-        self.brew_start = None
-        self.he_on = False
-        self.scale_weight = None
-        self.scale_is_connected = False
-        self.brew_to_weight = False
-        self.target_weight = None
-        self.use_preinfusion = False
-        self.preinfusion_time = 1.2
-        self.dwell_time = 2.5
-        self.avgpid = None
 
-    async def update_ivar(self, topic, key):
-        with PubSub.Subscription(self.hub, topic) as queue:
-            while True:
-                setattr(self, key, await queue.get())
-
-    async def update_ivars(self):
-        map = {
-            'avgtemp': topics.TOPIC_AVERAGE_TEMPERATURE,
-            'settemp': topics.TOPIC_SET_POINT,
-            'last_brew_time': topics.TOPIC_LAST_BREW_DURATION,
-            'brew_start': topics.TOPIC_CURRENT_BREW_START_TIME,
-            'he_on': topics.TOPIC_HE_ON,
-            'scale_weight': topics.TOPIC_SCALE_WEIGHT,
-            'scale_is_connected': topics.TOPIC_SCALE_CONNECTED,
-            'brew_to_weight': topics.TOPIC_ENABLE_WEIGHTED_SHOT,
-            'target_weight': topics.TOPIC_TARGET_WEIGHT,
-            'use_preinfusion': topics.TOPIC_USE_PREINFUSION,
-            'preinfusion_time': topics.TOPIC_PREINFUSION_TIME,
-            'dwell_time': topics.TOPIC_DWELL_TIME,
-            'avgpid': topics.TOPIC_PID_AVERAGE_VALUE,
-        }
-        updaters = []
-
-        for key in map:
-            updaters.append(self.update_ivar(map[key], key))
-
-        await asyncio.gather(*updaters)
+        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_TEMPERATURE, 0.0)
+        self.define_ivar('settemp', topics.TOPIC_SET_POINT, 0.0)
+        self.define_ivar('last_brew_time', topics.TOPIC_LAST_BREW_DURATION)
+        self.define_ivar('brew_start', topics.TOPIC_CURRENT_BREW_START_TIME)
+        self.define_ivar('he_on', topics.TOPIC_HE_ON, False)
+        self.define_ivar('scale_weight', topics.TOPIC_SCALE_WEIGHT)
+        self.define_ivar('scale_is_connected', topics.TOPIC_SCALE_CONNECTED, False)
+        self.define_ivar('brew_to_weight', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
+        self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT)
+        self.define_ivar('use_preinfusion', topics.TOPIC_USE_PREINFUSION, False)
+        self.define_ivar('preinfusion_time', topics.TOPIC_PREINFUSION_TIME, 1.2)
+        self.define_ivar('dwell_time', topics.TOPIC_DWELL_TIME, 2.5)
+        self.define_ivar('avgpid', topics.TOPIC_PID_AVERAGE_VALUE)
 
     async def run(self):
         # Create blank image for drawing.
@@ -105,6 +80,5 @@ class DisplayController:
 
             await asyncio.sleep(1)
 
-
     def futures(self):
-        return [self.update_ivars(), self.run()]
+        return [*super(DisplayController, self).futures(), self.run()]

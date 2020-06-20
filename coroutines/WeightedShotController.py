@@ -1,15 +1,16 @@
-import asyncio
-from utils import topics, ResizableRingBuffer, PubSub
+from coroutines import Base
+from utils import topics, PubSub
 
 
-class WeightedShotController:
+class WeightedShotController(Base):
     def __init__(self, hub):
-        self.hub = hub
+        super().__init__(hub)
         self.current_weight = None
         self.brewing = False
 
-        self.enable_weighted_shots = False
-        self.target_weight = 0.0
+        self.define_ivar('enable_weighted_shots', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
+        self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT, 0.0)
+
         self.weighted_shot_reaction_compensation = -2
         self.tare_weight = 0.0
 
@@ -38,21 +39,10 @@ class WeightedShotController:
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
-    async def update_target_weight(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_TARGET_WEIGHT) as queue:
-            while True:
-                self.target_weight = await queue.get()
-
-    async def update_enable_weighted_shot(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_ENABLE_WEIGHTED_SHOT) as queue:
-            while True:
-                self.enable_weighted_shots = await queue.get()
-
     def futures(self):
         return [
+            *super(WeightedShotController, self).futures(),
             self.on_start_brew(),
             self.on_stop_brew(),
             self.weight_update(),
-            self.update_target_weight(),
-            self.update_enable_weighted_shot(),
         ]

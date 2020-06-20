@@ -1,3 +1,4 @@
+from .Base import Base
 from .PigpioPins import PigpioPins
 from .TemperatureSensor import TemperatureSensor
 from .SteamControlSignal import SteamControlSignal
