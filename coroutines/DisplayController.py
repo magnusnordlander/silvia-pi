@@ -14,7 +14,7 @@ class DisplayController(Base):
         self.define_ivar('settemp', topics.TOPIC_SET_POINT, 0.0)
         self.define_ivar('last_brew_time', topics.TOPIC_LAST_BREW_DURATION)
         self.define_ivar('brew_start', topics.TOPIC_CURRENT_BREW_START_TIME)
-        self.define_ivar('he_on', topics.TOPIC_HE_ON, False)
+        self.define_ivar('he_enabled', topics.TOPIC_HE_ENABLED, False)
         self.define_ivar('scale_weight', topics.TOPIC_SCALE_WEIGHT)
         self.define_ivar('scale_is_connected', topics.TOPIC_SCALE_CONNECTED, False)
         self.define_ivar('brew_to_weight', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
@@ -23,6 +23,11 @@ class DisplayController(Base):
         self.define_ivar('preinfusion_time', topics.TOPIC_PREINFUSION_TIME, 1.2)
         self.define_ivar('dwell_time', topics.TOPIC_DWELL_TIME, 2.5)
         self.define_ivar('avgpid', topics.TOPIC_PID_AVERAGE_VALUE)
+        self.define_ivar('tunings', topics.TOPIC_PID_TUNINGS)
+        self.define_ivar('responsiveness', topics.TOPIC_PID_RESPONSIVENESS)
+        self.define_ivar('steam_mode', topics.TOPIC_STEAM_MODE, False)
+        self.define_ivar('steam_setpoint', topics.TOPIC_STEAM_TEMPERATURE_SET_POINT)
+        self.define_ivar('steam_delta', topics.TOPIC_STEAM_TEMPERATURE_DELTA)
 
     async def run(self):
         # Create blank image for drawing.
@@ -52,7 +57,6 @@ class DisplayController(Base):
             # Draw a black filled box to clear the image.
             draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
-            # Write four lines of text.
             if self.last_brew_time is not None:
                 shot_time = round(self.last_brew_time, 2)
             elif self.brew_start is not None:
@@ -60,21 +64,35 @@ class DisplayController(Base):
             else:
                 shot_time = 0
 
-            if self.he_on:
-                draw.text((x, top + 0), "T: {}°C > {}°C".format(round(self.avgtemp, 1), round(self.settemp)), font=font, fill=255)
+            if self.steam_mode:
+                draw.text((x, top + 0), "Steam mode", font=font, fill=255)
+                if self.he_enabled:
+                    draw.text((x, top + 8), "T: {}°C > {}°C".format(round(self.avgtemp, 1), self.steam_setpoint), font=font, fill=255)
+                else:
+                    draw.text((x, top + 8), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), self.steam_setpoint), font=font, fill=255)
+
+                draw.text((x, top + 16), "Time: {} s".format(shot_time), font=font, fill=255)
+                scale_weight = round(self.scale_weight or 0, 1) if self.scale_is_connected else "*"
+                if self.brew_to_weight:
+                    draw.text((x, top + 24), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
+                else:
+                    draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
+
             else:
-                draw.text((x, top + 0), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), round(self.settemp)), font=font, fill=255)
-            draw.text((x, top + 8), "Time: {} s".format(shot_time), font=font, fill=255)
-            scale_weight = round(self.scale_weight or 0, 1) if self.scale_is_connected else "*"
-            if self.brew_to_weight:
-                draw.text((x, top + 16), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
-            else:
-                draw.text((x, top + 16), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
-            draw.text((x, top + 24), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N', round(self.preinfusion_time, 1), round(self.dwell_time, 1)), font=font, fill=255)
-            # draw.text((x, top + 32), "Tunings: {}".format(self.state['tunings'].capitalize()), font=font, fill=255)
-            draw.text((x, top + 40), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
-            # if self.state['ignore_buttons']:
-            #     draw.text((x, top + 48), "Buttons ignored", font=font, fill=255)
+                if self.he_enabled:
+                    draw.text((x, top + 0), "T: {}°C > {}°C".format(round(self.avgtemp, 1), round(self.settemp)), font=font, fill=255)
+                else:
+                    draw.text((x, top + 0), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), round(self.settemp)), font=font, fill=255)
+                draw.text((x, top + 8), "Time: {} s".format(shot_time), font=font, fill=255)
+                scale_weight = round(self.scale_weight or 0, 1) if self.scale_is_connected else "*"
+                if self.brew_to_weight:
+                    draw.text((x, top + 16), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
+                else:
+                    draw.text((x, top + 16), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)), font=font, fill=255)
+                draw.text((x, top + 24), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N', round(self.preinfusion_time, 1), round(self.dwell_time, 1)), font=font, fill=255)
+                if self.tunings:
+                    draw.text((x, top + 32), "K: ({:.1f},{:.1f},{:.1f},{})".format(*self.tunings, self.responsiveness), font=font, fill=255)
+                draw.text((x, top + 40), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
 
             self.display.draw(image)
 

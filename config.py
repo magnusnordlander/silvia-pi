@@ -7,7 +7,10 @@ from utils.const import *
 spi_port = 0
 spi_dev = 0
 
-test_hardware = False
+pigpio_host = "192.168.10.107"
+pigpio_port = 8888
+
+test_hardware = True
 
 # Pin numbers for stuff
 try:
@@ -31,15 +34,15 @@ except NotImplementedError:
 
 # Weighted shots
 acaia_mac = "9B0F0A71-568C-4DB5-9002-F1D09B240D0A" if sys.platform == "darwin" else "00:1c:97:1a:a0:2f"
-weighted_shot_reaction_compensation = -2  # grams
+weighted_shot_reaction_compensation = -1.5  # grams
 
 # Default temperatures
-set_temp = 105.
-steam_low_temp = 139.
-steam_high_temp = 140.
+set_point = 105.
+steam_set_point = 139.5
+steam_delta = .5
 
 # Pre-infusion settings
-use_preinfusion = False # Just a default
+use_preinfusion = False  # Just a default
 preinfusion_time = 1.2
 dwell_time = 2.5
 
@@ -49,7 +52,7 @@ use_pump_tunings = True
 tunings = {
     TUNINGS_COLD: {
         KP: 3.4,
-        KI: 0.3,  # Traditional I multiplied by slow_sample_time
+        KI: 0.3,
         KD: 40.0,
         RESPONSIVENESS: 10 # Lower is more responsive
     },
@@ -68,4 +71,4 @@ tunings = {
 }
 
 mqtt_server = "192.168.10.66"
-mqtt_prefix = "silvia/"
+mqtt_prefix = "fakesilvia/"

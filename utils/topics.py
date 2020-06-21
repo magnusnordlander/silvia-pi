@@ -18,9 +18,7 @@ TOPIC_STEAM_HE_ON = "advice/steam/he_on"
 # PID data
 TOPIC_PID_VALUE = "advice/pid/pidval"
 TOPIC_PID_AVERAGE_VALUE = "advice/pid/avgpid"
-TOPIC_PID_P_TERM = "advice/pid/p_term"
-TOPIC_PID_I_TERM = "advice/pid/i_term"
-TOPIC_PID_D_TERM = "advice/pid/d_term"
+TOPIC_PID_TERMS = "advice/pid/terms"
 
 # Something wants us to start/stop the brew
 TOPIC_START_BREW = "advice/brew/start"
@@ -38,7 +36,12 @@ TOPIC_CONNECT_TO_SCALE = "advice/scale/keep_connected"
 TOPIC_TARGET_WEIGHT = "advice/scale/target_weight"
 TOPIC_ENABLE_WEIGHTED_SHOT = "advice/scale/enable_weighted_shot"
 
-TOPIC_SET_POINT = "advice/set_point"
+
+TOPIC_SET_POINT = "advice/pid/set_point"
+TOPIC_PID_TUNINGS = "advice/pid/tunings"
+TOPIC_PID_RESPONSIVENESS = "advice/pid/responsiveness"
+TOPIC_STEAM_TEMPERATURE_SET_POINT = "advice/steam_temperature/set_point"
+TOPIC_STEAM_TEMPERATURE_DELTA = "advice/steam_temperature/delta"
 
 # The scale *is* connected
 TOPIC_SCALE_CONNECTED = "mode/scale_connected"

@@ -3,7 +3,7 @@ from utils import topics, PubSub
 
 
 class WeightedShotController(Base):
-    def __init__(self, hub):
+    def __init__(self, hub, weighted_shot_reaction_compensation=0):
         super().__init__(hub)
         self.current_weight = None
         self.brewing = False
@@ -11,7 +11,8 @@ class WeightedShotController(Base):
         self.define_ivar('enable_weighted_shots', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False, authoritative=True)
         self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT, 0.0, authoritative=True)
 
-        self.weighted_shot_reaction_compensation = -1.5
+        self.weighted_shot_reaction_compensation = weighted_shot_reaction_compensation
+
         self.tare_weight = 0.0
 
     async def on_start_brew(self):

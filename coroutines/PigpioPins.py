@@ -11,8 +11,10 @@ def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
 
 
 class PigpioPins(Base):
-    def __init__(self, hub, loop):
+    def __init__(self, hub, loop, host="127.0.0.1", port=8888):
         super().__init__(hub)
+        self.port = port
+        self.host = host
         self.loop = loop
         self.pi = apigpio_fork.Pi(self.loop)
 
@@ -42,7 +44,7 @@ class PigpioPins(Base):
                     print("False button "+topic)
 
     def pre_futures(self):
-        address = ('192.168.10.107', 8888)
+        address = (self.host, self.port)
         return [self.pi.connect(address)]
 
     def futures(self, loop):

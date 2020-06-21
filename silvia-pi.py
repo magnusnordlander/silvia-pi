@@ -45,12 +45,12 @@ if __name__ == '__main__':
     v.close()
 
     coros = [
-        PigpioPins(hub, loop),
+        PigpioPins(hub, loop, host=conf.pigpio_host, port=conf.pigpio_port),
         TemperatureSensor(hub, s),
-        SteamControlSignal(hub),
+        SteamControlSignal(hub, conf.steam_set_point, conf.steam_delta),
         HeatingElementController(hub, b),
         ButtonControls(hub),
-        SimplePidControlSignal(hub, (3.4, 0.3, 40.0)),
+        SimplePidControlSignal(hub, (3.4, 0.3, 40.0), default_setpoint=conf.set_point),
         AcaiaScaleSensor(hub, conf.acaia_mac),
         MQTTProxy(hub, conf.mqtt_server, prefix=conf.mqtt_prefix, debug_mappings=True),
         ActuatorControl(hub, p, v),
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             default_dwell_time=conf.dwell_time
         ),
         BrewTimer(hub),
-        WeightedShotController(hub),
+        WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
         DisplayController(hub, d),
     ]
 
@@ -74,7 +74,8 @@ if __name__ == '__main__':
         topics.TOPIC_PID_AVERAGE_VALUE,
         topics.TOPIC_PID_VALUE,
         topics.TOPIC_STEAM_HE_ON,
-        topics.TOPIC_HE_ON
+        topics.TOPIC_HE_ON,
+        topics.TOPIC_PID_TERMS,
     ])))
     futures.append(publish_initial_authoritative_state(coros))
 

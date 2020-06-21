@@ -146,6 +146,14 @@ class PID(object):
         return self._proportional, self._integral, self._derivative
 
     @property
+    def factored_components(self):
+        """
+        The P-, I- and D-terms from the last computation as separate components as a tuple. Useful
+        for visualizing what the controller is doing or when tuning hard-to-tune systems.
+        """
+        return self._proportional, self._integral * self.Ki, self._derivative * -self.Kd
+
+    @property
     def tunings(self):
         """The tunings used by the controller as a tuple: (Kp, Ki, Kd)."""
         return self.Kp, self.Ki, self.Kd
