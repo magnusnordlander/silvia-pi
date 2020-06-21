@@ -1,11 +1,11 @@
 import asyncio
-import apigpio
+import apigpio_fork
 import config as conf
 from utils import topics, PubSub
 from functools import partial
 from coroutines import Base
 
-@apigpio.Debounce()
+@apigpio_fork.Debounce()
 def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
     hub.publish(topics.TOPIC_BUTTON_PROXY, (gpio, level, tick, topic))
 
@@ -14,7 +14,7 @@ class PigpioPins(Base):
     def __init__(self, hub, loop):
         super().__init__(hub)
         self.loop = loop
-        self.pi = apigpio.Pi(self.loop)
+        self.pi = apigpio_fork.Pi(self.loop)
 
     @asyncio.coroutine
     def subscribe_to_pins(self, pi, hub):
@@ -25,10 +25,10 @@ class PigpioPins(Base):
         }
 
         for pin in pins:
-            yield from pi.set_mode(pin, apigpio.INPUT)
-            yield from pi.set_pull_up_down(pin, apigpio.PUD_DOWN)
+            yield from pi.set_mode(pin, apigpio_fork.INPUT)
+            yield from pi.set_pull_up_down(pin, apigpio_fork.PUD_DOWN)
             yield from pi.set_glitch_filter(pin, 5000)
-            yield from pi.add_callback(pin, edge=apigpio.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi))
+            yield from pi.add_callback(pin, edge=apigpio_fork.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi))
 
     async def maybe_update_button(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_BUTTON_PROXY) as queue:

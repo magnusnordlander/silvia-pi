@@ -1,7 +1,6 @@
-The MIT License (MIT)
+MIT License
 
-Copyright (c) 2016 brycesub
-Copyright (c) 2020 Magnus Nordlander
+Copyright (c) 2018 Martin Lundberg
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
