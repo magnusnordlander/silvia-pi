@@ -40,7 +40,7 @@ if __name__ == '__main__':
         v = solenoid.GpioSolenoid(conf.solenoid_pin)
         d = display.EmulatedDisplay('/home/pi/silvia-pi/emulated_display.jpg')
 
-    b.heat_off()
+    b.force_heat_off()
     p.stop_pumping()
     v.close()
 
@@ -63,6 +63,7 @@ if __name__ == '__main__':
         BrewTimer(hub),
         WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
         DisplayController(hub, d),
+        BrewProfiler(hub, "/Users/magnusnordlander/brews/")
     ]
 
     loop.run_until_complete(asyncio.gather(*functools.reduce(lambda carry, coro: carry + coro.pre_futures(), coros, [])))

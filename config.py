@@ -10,7 +10,7 @@ spi_dev = 0
 pigpio_host = "192.168.10.107"
 pigpio_port = 8888
 
-test_hardware = True
+test_hardware = sys.platform == "darwin"
 
 # Pin numbers for stuff
 try:
@@ -31,6 +31,8 @@ except NotImplementedError:
     brew_button_pin = 21
     steam_button_pin = 16
     water_button_pin = 20
+
+brew_profile_directory = "/Users/magnusnordlander/brews/" if sys.platform == "darwin" else "/home/pi/brews/"
 
 # Weighted shots
 acaia_mac = "9B0F0A71-568C-4DB5-9002-F1D09B240D0A" if sys.platform == "darwin" else "00:1c:97:1a:a0:2f"
@@ -71,4 +73,4 @@ tunings = {
 }
 
 mqtt_server = "192.168.10.66"
-mqtt_prefix = "fakesilvia/"
+mqtt_prefix = "fakesilvia/" if sys.platform == "darwin" else "silvia/"
