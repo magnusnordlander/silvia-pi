@@ -4,18 +4,23 @@ from coroutines import Base
 
 
 class HeatingElementController(Base):
-    def __init__(self, hub, boiler):
+    def __init__(self, hub, boiler, use_pump_tunings=True):
         super().__init__(hub)
+        self.use_pump_tunings = use_pump_tunings
         self.boiler = boiler
         self.define_ivar('steam_mode', topics.TOPIC_STEAM_MODE, default=False, authoritative=True)
         self.define_ivar('he_enabled', topics.TOPIC_HE_ENABLED, default=False, authoritative=True)
+        self.define_ivar('pump_on', topics.TOPIC_PUMP_ON, default=False)
 
     async def update_he_from_pid(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_PID_AVERAGE_VALUE) as queue:
             while True:
                 avgpid = await queue.get()
                 if not self.steam_mode:
-                    if avgpid >= 100 and self.he_enabled:
+                    if self.he_enabled and self.use_pump_tunings and self.pump_on:
+                        self.he_on()
+                        await asyncio.sleep(1)
+                    elif avgpid >= 100 and self.he_enabled:
                         self.he_on()
                         await asyncio.sleep(1)
                     elif 0 < avgpid < 100 and self.he_enabled:
