@@ -24,7 +24,7 @@ Caveat emptor.
 * Acaia Lunar
 
 ### Upcoming Hardware
-* 128x64 SPI OLED, SSD1302 controller
+* 128x64 SPI OLED, SSD1306 controller
 * Another Adafruit MAX31865 sensor amplifier
 * PTFM101T1A0 PT100,1.2X4.0,T thermocouple
 * Adafruit ADS1083 4 channel ADC
@@ -47,7 +47,7 @@ Caveat emptor.
 * Smart scale integration (Acaia)
 * Add reaction time compensation for weighted shots
 * asyncio instead of multiprocess
-* 128x64 SPI OLED display *Performance problems. This'll probably require the asyncio refactoring to work well.*
+* 128x64 SPI OLED display
 
 ### In progress
 * Second temperature sensor near group head?
