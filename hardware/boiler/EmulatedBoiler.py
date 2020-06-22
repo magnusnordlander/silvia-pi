@@ -31,6 +31,12 @@ class EmulatedBoiler(object):
         self.update_heat()
         self.last_heat_start = None
 
+    def force_heat_off(self):
+        print("Heating element forced off")
+        self.last_mode = False
+        self.update_heat()
+        self.last_heat_start = None
+
     def update_heat(self):
         if self.last_heat_start:
             now = time.time_ns()

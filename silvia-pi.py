@@ -83,6 +83,6 @@ if __name__ == '__main__':
         loop.run_until_complete(asyncio.gather(*futures))
         loop.run_forever()
     finally:
-        b.heat_off()
+        b.force_heat_off()
         p.stop_pumping()
         v.close()

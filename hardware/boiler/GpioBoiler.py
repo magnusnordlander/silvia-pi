@@ -30,6 +30,11 @@ class GpioBoiler(object):
         self.last_mode = False
         GPIO.output(self.control_pin, 0)
 
+    def force_heat_off(self):
+        print("Heating element forced off")
+        self.last_mode = False
+        GPIO.output(self.control_pin, 0)
+
     def cleanup(self):
         print("Cleaning up GPIO boiler " + str(self.control_pin))
         GPIO.cleanup()
