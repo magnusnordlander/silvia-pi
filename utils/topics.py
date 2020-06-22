@@ -40,6 +40,7 @@ TOPIC_ENABLE_WEIGHTED_SHOT = "advice/scale/enable_weighted_shot"
 TOPIC_SET_POINT = "advice/pid/set_point"
 TOPIC_PID_TUNINGS = "advice/pid/tunings"
 TOPIC_PID_RESPONSIVENESS = "advice/pid/responsiveness"
+TOPIC_PUMP_PIDVAL_FEED_FORWARD = "advice/pid/pump_feed_forward"
 TOPIC_STEAM_TEMPERATURE_SET_POINT = "advice/steam_temperature/set_point"
 TOPIC_STEAM_TEMPERATURE_DELTA = "advice/steam_temperature/delta"
 

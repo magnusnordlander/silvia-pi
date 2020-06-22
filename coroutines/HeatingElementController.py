@@ -4,12 +4,16 @@ from coroutines import Base
 
 
 class HeatingElementController(Base):
-    def __init__(self, hub, boiler, use_pump_tunings=True):
+    def __init__(self, hub, boiler, default_pump_pidval=0.8, feed_forward=True):
         super().__init__(hub)
-        self.use_pump_tunings = use_pump_tunings
+
         self.boiler = boiler
+
+        self.feed_forward = feed_forward
+
         self.define_ivar('steam_mode', topics.TOPIC_STEAM_MODE, default=False, authoritative=True)
         self.define_ivar('he_enabled', topics.TOPIC_HE_ENABLED, default=False, authoritative=True)
+        self.define_ivar('pump_pidval', topics.TOPIC_PUMP_PIDVAL_FEED_FORWARD, default=default_pump_pidval, authoritative=True)
         self.define_ivar('pump_on', topics.TOPIC_PUMP_ON, default=False)
 
     async def update_he_from_pid(self):
@@ -17,10 +21,11 @@ class HeatingElementController(Base):
             while True:
                 avgpid = await queue.get()
                 if not self.steam_mode:
-                    if self.he_enabled and self.use_pump_tunings and self.pump_on:
-                        self.he_on()
-                        await asyncio.sleep(1)
-                    elif avgpid >= 100 and self.he_enabled:
+                    if self.he_enabled and self.feed_forward and self.pump_on:
+                        # Fake a feed forward PID
+                        avgpid = float(self.pump_pidval)
+
+                    if avgpid >= 100 and self.he_enabled:
                         self.he_on()
                         await asyncio.sleep(1)
                     elif 0 < avgpid < 100 and self.he_enabled:

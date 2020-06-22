@@ -30,6 +30,7 @@ class MQTTProxy(Base):
             topics.TOPIC_HE_ENABLED: Mapping('is_awake', mode=Mapping.MODE_READWRITE),
             topics.TOPIC_STEAM_TEMPERATURE_SET_POINT: Mapping('steam_set_point', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_STEAM_TEMPERATURE_DELTA: Mapping('steam_delta', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
+            topics.TOPIC_PUMP_PIDVAL_FEED_FORWARD: Mapping('pump_feed_forward', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
         }
 
         if debug_mappings:
