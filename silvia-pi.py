@@ -77,6 +77,8 @@ if __name__ == '__main__':
         topics.TOPIC_STEAM_HE_ON,
         topics.TOPIC_HE_ON,
         topics.TOPIC_PID_TERMS,
+        topics.TOPIC_CURRENT_GROUP_TEMPERATURE,
+        topics.TOPIC_ALL_TEMPERATURES,
     ])))
     futures.append(publish_initial_authoritative_state(coros))
 
