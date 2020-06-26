@@ -71,7 +71,7 @@ Caveat emptor.
    * GPIO10
    * GPIO9
    * GPIO11
-   * CS: GPIO5 (Why aren't I using the standard GPIO8? reallocate)
+   * CS: GPIO26
 * SPI0CS2: MAX31865 temp sensor 2 (not yet implemented)
    * GPIO10
    * GPIO9
@@ -87,22 +87,20 @@ Caveat emptor.
    * GPIO1
    * GPIO2
    * GPIO3
-* GPIO18: Heating element (via BSS138) *Conflict with standard SPI1CE0, reallocate to GPIO4*
-* GPIO14: Solenoid (via BSS138)
-* GPIO15: Pump (via BSS138)
-* GPIO21: Brew button *Conflict with SPI1, reallocate to GPIO5*
-* GPIO16: Steam button *Conflict with SPI1, reallocate to GPIO6*
-* GPIO20: Water button *Reallocate to GPIO13*
+* GPIO04: Heating element (via BSS138)
+* GPIO15: Solenoid (via BSS138)
+* GPIO14: Pump (via BSS138)
+* GPIO16: Brew button
+* GPIO06: Steam button
+* GPIO20: Water button
 
 #### Free GPIO pins
 * GPIO12
-* GPIO16
 * GPIO17
 * GPIO22
 * GPIO23
 * GPIO24
 * GPIO25
-* GPIO26
 * GPIO27
 
 #### Super weird edge cases no one but me should worry about
