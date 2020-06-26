@@ -12,8 +12,8 @@ class Max31865Sensor(object):
         spi = busio.SPI(clock, MOSI=mosi, MISO=miso)
         cs_boiler_io = digitalio.DigitalInOut(cs_boiler)  # Chip select of the MAX31865 board.
         cs_group_io = digitalio.DigitalInOut(cs_group)
-        self.boiler_sensor = MAX31865(spi, cs_boiler, rtd_nominal=rtd_nominal_boiler, wires=wires, filter_frequency=50)
-        self.group_sensor = MAX31865(spi, cs_boiler, rtd_nominal=rtd_nominal_group, wires=wires, filter_frequency=50)
+        self.boiler_sensor = MAX31865(spi, cs_boiler_io, rtd_nominal=rtd_nominal_boiler, wires=wires, filter_frequency=50)
+        self.group_sensor = MAX31865(spi, cs_group_io, rtd_nominal=rtd_nominal_group, wires=wires, filter_frequency=50)
 
     def get_update_delay(self):
         return 0.150
