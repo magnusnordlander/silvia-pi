@@ -63,7 +63,7 @@ if __name__ == '__main__':
         BrewTimer(hub),
         WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
         DisplayController(hub, d),
-        BrewProfiler(hub, "/Users/magnusnordlander/brews/")
+        BrewProfiler(hub, conf.brew_profile_directory)
     ]
 
     loop.run_until_complete(asyncio.gather(*functools.reduce(lambda carry, coro: carry + coro.pre_futures(), coros, [])))
