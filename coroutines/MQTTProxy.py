@@ -15,7 +15,8 @@ class MQTTProxy(Base):
         self.last_send = {}
 
         self.mappings = {
-            topics.TOPIC_AVERAGE_TEMPERATURE: Mapping('avgtemp', formatter=Mapping.FloatFormatter, throttle=3),
+            topics.TOPIC_AVERAGE_BOILER_TEMPERATURE: Mapping('avgtemp', formatter=Mapping.FloatFormatter, throttle=3),
+            topics.TOPIC_CURRENT_GROUP_TEMPERATURE: Mapping('group_temp', formatter=Mapping.FloatFormatter, throttle=3),
             topics.TOPIC_PID_AVERAGE_VALUE: Mapping('avgpid', formatter=Mapping.FloatFormatter, throttle=3),
             topics.TOPIC_SCALE_WEIGHT: Mapping('scale_weight', formatter=Mapping.FloatFormatter, throttle=1),
             topics.TOPIC_SCALE_CONNECTED: Mapping('scale_is_connected'),

@@ -10,7 +10,7 @@ class DisplayController(Base):
         super().__init__(hub)
         self.display = display
 
-        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_TEMPERATURE, 0.0)
+        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, 0.0)
         self.define_ivar('settemp', topics.TOPIC_SET_POINT, 0.0)
         self.define_ivar('last_brew_time', topics.TOPIC_LAST_BREW_DURATION)
         self.define_ivar('brew_start', topics.TOPIC_CURRENT_BREW_START_TIME)

@@ -17,7 +17,7 @@ class EmulatedSensor:
         self.state['water_temp'] += degrees
 
     def get_update_delay(self):
-        return 0.075
+        return 0.150
 
     async def get_temp_c(self):
         if random.randint(0,2) == 0:
@@ -25,6 +25,6 @@ class EmulatedSensor:
             dt = self.state['water_temp'] - self.ambient_temperature
             self.state['water_temp'] -= dt / 300
 
-        await asyncio.sleep(0.075)
+        await asyncio.sleep(0.150)
 
-        return self.state['water_temp']
+        return self.state['water_temp'], self.state['water_temp']

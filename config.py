@@ -16,20 +16,23 @@ test_hardware = sys.platform == "darwin"
 try:
     import board
 
-    temp_sensor_cs_pin = board.D5
-    he_pin = 18
-    solenoid_pin = 14
-    pump_pin = 15
+    boiler_temp_sensor_cs_pin = board.D26
+    group_temp_sensor_cs_pin = board.D7
 
-    brew_button_pin = 21
-    steam_button_pin = 16
+    he_pin = 4
+    solenoid_pin = 15
+    pump_pin = 14
+
+    brew_button_pin = 16
+    steam_button_pin = 6
     water_button_pin = 20
 except NotImplementedError:
-    temp_sensor_cs_pin = None
+    boiler_temp_sensor_cs_pin = None
+    group_temp_sensor_cs_pin = None
     he_pin = None
     solenoid_pin = None
-    brew_button_pin = 21
-    steam_button_pin = 16
+    brew_button_pin = 16
+    steam_button_pin = 6
     water_button_pin = 20
 
 brew_profile_directory = "/Users/magnusnordlander/brews/" if sys.platform == "darwin" else "/home/pi/brews/"

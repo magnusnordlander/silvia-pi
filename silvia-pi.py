@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
     futures = functools.reduce(lambda carry, coro: carry + coro.futures(loop), coros, [])
     futures.append(printer(hub, frozenset([
-        topics.TOPIC_CURRENT_TEMPERATURE,
-        topics.TOPIC_AVERAGE_TEMPERATURE,
+        topics.TOPIC_CURRENT_BOILER_TEMPERATURE,
+        topics.TOPIC_AVERAGE_BOILER_TEMPERATURE,
         topics.TOPIC_PID_AVERAGE_VALUE,
         topics.TOPIC_PID_VALUE,
         topics.TOPIC_STEAM_HE_ON,

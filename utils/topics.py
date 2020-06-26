@@ -8,8 +8,10 @@ TOPIC_WATER_BUTTON = "sensor/button/water"
 TOPIC_STEAM_BUTTON = "sensor/button/steam"
 
 # Sensor data
-TOPIC_CURRENT_TEMPERATURE = "sensor/temperature"
-TOPIC_AVERAGE_TEMPERATURE = "sensor/average_temperature"
+TOPIC_CURRENT_BOILER_TEMPERATURE = "sensor/boiler_temperature"
+TOPIC_AVERAGE_BOILER_TEMPERATURE = "sensor/average_boiler_temperature"
+TOPIC_CURRENT_GROUP_TEMPERATURE = "sensor/group_temperature"
+TOPIC_ALL_TEMPERATURES = "sensor/all_temperatures"
 TOPIC_SCALE_WEIGHT = "sensor/scale_weight"
 
 # Does the steam controller want the heating element on?

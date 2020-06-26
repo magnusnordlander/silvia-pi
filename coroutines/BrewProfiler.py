@@ -68,12 +68,12 @@ class BrewProfiler(Base):
                     self.store(brew_data, metadata)
 
     async def temperature_update(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_CURRENT_TEMPERATURE) as queue:
+        with PubSub.Subscription(self.hub, topics.TOPIC_ALL_TEMPERATURES) as queue:
             while True:
-                temp = await queue.get()
+                temp_boiler, temp_group = await queue.get()
 
                 if self.profiling:
-                    self.current_brew_data.append([time.time(), temp, self.current_weight, self.current_avgpid, self.solenoid, self.pump])
+                    self.current_brew_data.append([time.time(), temp_boiler, temp_group, self.current_weight, self.current_avgpid, self.solenoid, self.pump])
 
     def store(self, brew_data, metadata):
         base_filename = self.base_filename(metadata)
@@ -85,7 +85,7 @@ class BrewProfiler(Base):
 
         with open(self.output_directory+data_filename, 'w') as fp:
             wtr = csv.writer(fp, delimiter=',', lineterminator='\n')
-            wtr.writerow(["Time", "Temperature", "Weight", "Avg. PID", "Solenoid", "Pump"])
+            wtr.writerow(["Time", "Boiler Temperature", "Group Temperature", "Weight", "Avg. PID", "Solenoid", "Pump"])
             for r in brew_data:
                 wtr.writerow(r)
 

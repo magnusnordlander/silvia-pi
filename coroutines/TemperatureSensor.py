@@ -13,11 +13,13 @@ class TemperatureSensor(Base):
 
     async def update_temperature(self):
         while True:
-            # Nominally takes 0.075 s
-            temp = await self.sensor.get_temp_c()
-            self.ring_buffer.append(temp)
-            self.hub.publish(topics.TOPIC_CURRENT_TEMPERATURE, temp)
-            self.hub.publish(topics.TOPIC_AVERAGE_TEMPERATURE, self.ring_buffer.avg())
+            # Nominally takes 0.150 s
+            temp_boiler, temp_group = await self.sensor.get_temp_c()
+            self.ring_buffer.append(temp_boiler)
+            self.hub.publish(topics.TOPIC_CURRENT_BOILER_TEMPERATURE, temp_boiler)
+            self.hub.publish(topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, self.ring_buffer.avg())
+            self.hub.publish(topics.TOPIC_CURRENT_GROUP_TEMPERATURE, temp_group)
+            self.hub.publish(topics.TOPIC_ALL_TEMPERATURES, (temp_boiler, temp_group))
 
             update_delay = self.sensor.get_update_delay()
             if update_delay > self.update_interval:

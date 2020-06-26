@@ -11,7 +11,7 @@ class SimplePidControlSignal(Base):
         self.temperature_update_interval = temperature_update_interval
         self.define_ivar('tunings', topics.TOPIC_PID_TUNINGS, default_tunings, True)
         self.define_ivar('responsiveness', topics.TOPIC_PID_RESPONSIVENESS, default_responsiveness, True)
-        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_TEMPERATURE, default=20)
+        self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, default=20)
         self.define_ivar('setpoint', topics.TOPIC_SET_POINT, default=default_setpoint, authoritative=True)
 
     async def update_pid_control(self):
@@ -25,7 +25,7 @@ class SimplePidControlSignal(Base):
         last_advice = 0
 
         try:
-            with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_TEMPERATURE) as queue:
+            with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_BOILER_TEMPERATURE) as queue:
                 while True:
                     avgtemp = await queue.get()
 

@@ -10,7 +10,7 @@ class SteamControlSignal(Base):
         self.define_ivar("delta", topics.TOPIC_STEAM_TEMPERATURE_DELTA, default_delta, True)
 
     async def update_steam_control(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_TEMPERATURE) as queue:
+        with PubSub.Subscription(self.hub, topics.TOPIC_AVERAGE_BOILER_TEMPERATURE) as queue:
             while True:
                 avgtemp = await queue.get()
 
