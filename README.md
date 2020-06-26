@@ -91,8 +91,8 @@ Caveat emptor.
 * GPIO15: Solenoid (via BSS138)
 * GPIO14: Pump (via BSS138)
 * GPIO16: Brew button
-* GPIO06: Steam button
-* GPIO20: Water button
+* GPIO13: Steam button
+* GPIO06: Water button
 
 #### Free GPIO pins
 * GPIO12
