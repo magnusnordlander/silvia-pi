@@ -4,6 +4,7 @@ import time
 from coroutines import Base
 import csv
 import json
+import os
 
 
 class BrewProfiler(Base):
@@ -82,6 +83,7 @@ class BrewProfiler(Base):
 
         with open(self.output_directory+metadata_filename, 'w') as fp:
             json.dump(metadata, fp)
+        os.chmod(self.output_directory+metadata_filename, 0o666)
 
         with open(self.output_directory+data_filename, 'w') as fp:
             wtr = csv.writer(fp, delimiter=',', lineterminator='\n')
