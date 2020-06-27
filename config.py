@@ -24,16 +24,16 @@ try:
     pump_pin = 14
 
     brew_button_pin = 16
-    steam_button_pin = 6
-    water_button_pin = 20
+    steam_button_pin = 5
+    water_button_pin = 6
 except NotImplementedError:
     boiler_temp_sensor_cs_pin = None
     group_temp_sensor_cs_pin = None
     he_pin = None
     solenoid_pin = None
     brew_button_pin = 16
-    steam_button_pin = 6
-    water_button_pin = 20
+    steam_button_pin = 5
+    water_button_pin = 6
 
 brew_profile_directory = "/Users/magnusnordlander/brews/" if sys.platform == "darwin" else "/home/pi/brews/"
 
