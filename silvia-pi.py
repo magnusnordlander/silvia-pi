@@ -34,7 +34,7 @@ if __name__ == '__main__':
         v = solenoid.EmulatedSolenoid()
         d = display.EmulatedDisplay('/Users/magnusnordlander/emulated_display.jpg')
     else:
-        s = temperature_sensor.Max31865Sensor(conf.boiler_temp_sensor_cs_pin, conf.group_temp_sensor_cs_pin, rtd_nominal_boiler=100.5, rtd_nominal_group=97.15)
+        s = temperature_sensor.Max31865Sensor(conf.boiler_temp_sensor_cs_pin, conf.group_temp_sensor_cs_pin, rtd_nominal_boiler=103.5, rtd_nominal_group=100.8)
         b = boiler.GpioBoiler(conf.he_pin)
         p = pump.GpioPump(conf.pump_pin)
         v = solenoid.GpioSolenoid(conf.solenoid_pin)
