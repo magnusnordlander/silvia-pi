@@ -4,7 +4,7 @@ from coroutines import Base
 
 
 class HeatingElementController(Base):
-    def __init__(self, hub, boiler, default_pump_pidval=0.8, feed_forward=True):
+    def __init__(self, hub, boiler, default_pump_pidval=80, feed_forward=True):
         super().__init__(hub)
 
         self.boiler = boiler
