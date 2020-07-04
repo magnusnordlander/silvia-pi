@@ -55,6 +55,8 @@ class DisplayController(Base):
         self.low_contrast = 0x00
         self.high_contrast = 0xCF
 
+        self.oled_saver = True
+
         self.spi_handle = None
 
         self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, 0.0)
@@ -113,7 +115,10 @@ class DisplayController(Base):
             font = ImageFont.load_default()
 
             while True:
-                self.draw_image(draw, top, bottom, width, height, font, x)
+                if not self.oled_saver or self.he_enabled:
+                    self.draw_image(draw, top, bottom, width, height, font, x)
+                else:
+                    self.draw_dots(draw, top, bottom, width, height, font, x)
                 await self.display_image(image)
 
                 contrast = self.high_contrast if self.he_enabled else self.low_contrast
@@ -131,6 +136,13 @@ class DisplayController(Base):
             print("Closing SPI handle ", self.spi_handle)
             await self.pi.spi_close(self.spi_handle)
             self.spi_handle = None
+
+    def draw_dots(self, draw, top, bottom, width, height, font, x):
+        # Draw a black filled box to clear the image.
+        draw.rectangle((0, 0, width, height), outline=0, fill=0)
+        draw.point((width, height), fill=255)
+        draw.point((width-2, height), fill=255)
+        draw.point((width-4, height), fill=255)
 
     def draw_image(self, draw, top, bottom, width, height, font, x):
         # Draw a black filled box to clear the image.
@@ -296,7 +308,7 @@ class DisplayController(Base):
 
     async def invert(self):
         while True:
-            await asyncio.sleep(10)
+            await asyncio.sleep(60*60*8)
             await self.command_bytes(SSD1306_INVERTDISPLAY)
             await asyncio.sleep(1)
             await self.command_bytes(SSD1306_NORMALDISPLAY)
