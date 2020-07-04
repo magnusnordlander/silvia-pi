@@ -55,7 +55,7 @@ class DisplayController(Base):
         self.low_contrast = 0x00
         self.high_contrast = 0xCF
 
-        self.oled_saver = True
+        self.define_ivar('oled_saver', topics.TOPIC_OLED_SAVER, True, authoritative=True)
 
         self.spi_handle = None
 
@@ -140,9 +140,9 @@ class DisplayController(Base):
     def draw_dots(self, draw, top, bottom, width, height, font, x):
         # Draw a black filled box to clear the image.
         draw.rectangle((0, 0, width, height), outline=0, fill=0)
-        draw.point((width, height), fill=255)
-        draw.point((width-2, height), fill=255)
-        draw.point((width-4, height), fill=255)
+        draw.point((width-1, height-1), fill=255)
+        draw.point((width-3, height-1), fill=255)
+        draw.point((width-5, height-1), fill=255)
 
     def draw_image(self, draw, top, bottom, width, height, font, x):
         # Draw a black filled box to clear the image.

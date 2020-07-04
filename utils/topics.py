@@ -61,6 +61,8 @@ TOPIC_PREINFUSION_TIME = "mode/use_preinfusion/preinfusion_time"
 TOPIC_DWELL_TIME = "mode/use_preinfusion/dwell_time"
 TOPIC_HE_ENABLED = "mode/he_enabled"
 
+TOPIC_OLED_SAVER = "mode/oled_saver"
+
 TOPIC_LAST_BREW_DURATION = "status/last_brew_duration"
 TOPIC_CURRENT_BREW_START_TIME = "status/current_brew_start_time"
 TOPIC_CURRENT_BREW_TIME_UPDATE = "status/current_brew_duration"

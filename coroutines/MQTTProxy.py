@@ -32,6 +32,7 @@ class MQTTProxy(Base):
             topics.TOPIC_STEAM_TEMPERATURE_SET_POINT: Mapping('steam_set_point', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_STEAM_TEMPERATURE_DELTA: Mapping('steam_delta', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_PUMP_PIDVAL_FEED_FORWARD: Mapping('pump_feed_forward', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
+            topics.TOPIC_OLED_SAVER: Mapping('oled_saver', mode=Mapping.MODE_READWRITE, formatter=Mapping.BoolFormatter),
         }
 
         if debug_mappings:
