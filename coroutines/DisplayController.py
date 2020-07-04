@@ -52,6 +52,9 @@ class DisplayController(Base):
         self.cs_num = cs_num
         self.pi = pi
 
+        self.low_contrast = 0x30
+        self.high_contrast = 0xCF
+
         self.spi_handle = None
 
         self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, 0.0)
@@ -112,6 +115,10 @@ class DisplayController(Base):
             while True:
                 self.draw_image(draw, top, bottom, width, height, font, x)
                 await self.display_image(image)
+
+                contrast = self.high_contrast if self.he_enabled else self.low_contrast
+                await self.command_bytes(SSD1306_SETCONTRAST)  # 0x81
+                await self.command_bytes(contrast)
 
                 await asyncio.sleep(1)
         finally:
@@ -240,7 +247,7 @@ class DisplayController(Base):
         if vccstate == SSD1306_EXTERNALVCC:
             await self.command_bytes(0x9F)
         else:
-            await self.command_bytes(0xCF)
+            await self.command_bytes(self.high_contrast)
         await self.command_bytes(SSD1306_SETPRECHARGE)  # 0xd9
         if vccstate == SSD1306_EXTERNALVCC:
             await self.command_bytes(0x22)
