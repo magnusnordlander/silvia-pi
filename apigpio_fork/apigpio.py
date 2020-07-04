@@ -127,6 +127,10 @@ _PI_CMD_WVCHA = 93
 
 _PI_CMD_SLRI = 94
 
+_PI_CMD_BSPIC = 111
+_PI_CMD_BSPIO = 112
+_PI_CMD_BSPIX = 113
+
 # pigpio error text
 
 _errors = [
@@ -547,6 +551,7 @@ class Pi(object):
         with (yield from self._lock):
             return (yield from self._pigpio_aio_command_ext_unlocked(cmd, p1, p2, p3, extents))
 
+    @asyncio.coroutine
     def _pigpio_aio_command_ext_unlocked(self, cmd, p1, p2, p3, extents):
         """Run extended pigpio socket command without any lock."""
         ext = bytearray(struct.pack('IIII', cmd, p1, p2, p3))
@@ -1059,6 +1064,31 @@ class Pi(object):
         return _u2i(res)
 
     @asyncio.coroutine
+    def bb_spi_open(self, cs, miso, mosi, sclk ,b, spf):
+        """Open a bspi device on a bus."""
+        extents = [struct.pack('IIIII', int(miso), int(mosi), int(sclk), int(b), int(spf))]
+        res = yield from self._pigpio_aio_command_ext(_PI_CMD_BSPIO, cs, 0, 20, extents=extents)
+        return _u2i(res)
+
+    @asyncio.coroutine
+    def bb_spi_close(self, cs):
+        """Close a bspi device on a bus."""
+        res = yield from self._pigpio_aio_command(_PI_CMD_BSPIC, cs, 0)
+        return _u2i(res)
+
+    @asyncio.coroutine
+    def bb_spi_xfer(self, cs, data):
+        bytes = PI_CMD_INTERRUPTED
+        with (yield from self._lock):
+            bytes = yield from self._pigpio_aio_command_ext_unlocked(
+                _PI_CMD_BSPIX, cs, 0, len(data), [data])
+            if bytes > 0:
+                data = yield from self._rxbuf(bytes)
+            else:
+                data = ""
+        return bytes, data
+
+    @asyncio.coroutine
     def i2c_open(self, bus, address):
         """Open an i2c device on a bus."""
         res = yield from self._pigpio_aio_command(_PI_CMD_I2CO, int(bus), int(address))
@@ -1074,7 +1104,7 @@ class Pi(object):
     def i2c_write_byte_data(self, handle, register, data):
         """Write byte to i2c register on handle."""
         extents = [struct.pack("I", data)]
-        res = yield from self._pigpio_aio_command_ext(_PI_CMD_I2CWB, handle, int(register), 4, extents)
+        res = yield from self._pigpio_aio_command_ext(_PI_CMD_I2CWB, handle, int(register), 1, extents)
         return _u2i(res)
 
     @asyncio.coroutine

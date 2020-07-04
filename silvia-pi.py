@@ -1,4 +1,5 @@
 import asyncio
+import apigpio_fork
 import config as conf
 from utils import topics, PubSub
 import functools
@@ -32,20 +33,22 @@ if __name__ == '__main__':
         b = boiler.EmulatedBoiler(s)
         p = pump.EmulatedPump()
         v = solenoid.EmulatedSolenoid()
-        d = display.EmulatedDisplay('/Users/magnusnordlander/emulated_display.jpg')
     else:
         s = temperature_sensor.Max31865Sensor(conf.boiler_temp_sensor_cs_pin, conf.group_temp_sensor_cs_pin, rtd_nominal_boiler=103.5, rtd_nominal_group=100.8)
         b = boiler.GpioBoiler(conf.he_pin)
         p = pump.GpioPump(conf.pump_pin)
         v = solenoid.GpioSolenoid(conf.solenoid_pin)
-        d = display.EmulatedDisplay('/home/pi/silvia-pi/emulated_display.jpg')
 
     b.force_heat_off()
     p.stop_pumping()
     v.close()
 
+    pi = apigpio_fork.Pi(loop)
+    address = (conf.pigpio_host, conf.pigpio_port)
+    loop.run_until_complete(pi.connect(address))
+
     coros = [
-        PigpioPins(hub, loop, host=conf.pigpio_host, port=conf.pigpio_port),
+        PigpioPins(hub, pi),
         TemperatureSensor(hub, s),
         SteamControlSignal(hub, conf.steam_set_point, conf.steam_delta),
         HeatingElementController(hub, b),
@@ -62,12 +65,11 @@ if __name__ == '__main__':
         ),
         BrewTimer(hub),
         WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
-        DisplayController(hub, d),
+        DisplayController(hub, pi),
         BrewProfiler(hub, conf.brew_profile_directory)
     ]
 
-    loop.run_until_complete(asyncio.gather(*functools.reduce(lambda carry, coro: carry + coro.pre_futures(), coros, [])))
-
+    print("Okay?")
     futures = functools.reduce(lambda carry, coro: carry + coro.futures(loop), coros, [])
     futures.append(printer(hub, frozenset([
         topics.TOPIC_CURRENT_BOILER_TEMPERATURE,

@@ -7,7 +7,7 @@ from utils.const import *
 spi_port = 0
 spi_dev = 0
 
-pigpio_host = "192.168.10.107"
+pigpio_host = "192.168.10.108"
 pigpio_port = 8888
 
 test_hardware = sys.platform == "darwin"

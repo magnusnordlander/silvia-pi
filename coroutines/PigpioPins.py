@@ -11,12 +11,9 @@ def on_input_forward_to_hub(gpio, level, tick, hub, topic, pi):
 
 
 class PigpioPins(Base):
-    def __init__(self, hub, loop, host="127.0.0.1", port=8888):
+    def __init__(self, hub, pi):
         super().__init__(hub)
-        self.port = port
-        self.host = host
-        self.loop = loop
-        self.pi = apigpio_fork.Pi(self.loop)
+        self.pi = pi
 
     @asyncio.coroutine
     def subscribe_to_pins(self, pi, hub):
@@ -42,10 +39,6 @@ class PigpioPins(Base):
                     self.hub.publish(topic, level == 1)
                 else:
                     print("False button "+topic)
-
-    def pre_futures(self):
-        address = (self.host, self.port)
-        return [self.pi.connect(address)]
 
     def futures(self, loop):
         return [self.maybe_update_button(), self.subscribe_to_pins(self.pi, self.hub)]
