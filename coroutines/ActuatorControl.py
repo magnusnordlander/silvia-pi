@@ -3,26 +3,31 @@ from coroutines import Base
 
 
 class ActuatorControl(Base):
-    def __init__(self, hub, pump, solenoid):
+    def __init__(self, hub, pi, pump_pin, solenoid_pin):
         super().__init__(hub)
-        self.solenoid = solenoid
-        self.pump = pump
+        self.pump_pin = pump_pin
+        self.solenoid_pin = solenoid_pin
+        self.pi = pi
 
     async def update_pump(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_PUMP_ON) as queue:
             while True:
                 if await queue.get():
-                    self.pump.start_pumping()
+                    print("Starting pump")
+                    await self.pi.write(self.pump_pin, 1)
                 else:
-                    self.pump.stop_pumping()
+                    print("Stopping pump")
+                    await self.pi.write(self.pump_pin, 0)
 
     async def update_solenoid(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_SOLENOID_OPEN) as queue:
             while True:
                 if await queue.get():
-                    self.solenoid.open()
+                    print("Opening solenoid")
+                    await self.pi.write(self.solenoid_pin, 1)
                 else:
-                    self.solenoid.close()
+                    print("Closing solenoid")
+                    await self.pi.write(self.solenoid_pin, 0)
 
     def futures(self, loop):
         return [self.update_pump(), self.update_solenoid()]

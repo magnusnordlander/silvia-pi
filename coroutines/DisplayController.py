@@ -75,8 +75,6 @@ class DisplayController(Base):
         self.define_ivar('steam_delta', topics.TOPIC_STEAM_TEMPERATURE_DELTA)
 
     async def run(self):
-        print("Running")
-
         try:
             await self.pi.bb_spi_open(CE, MISO, MOSI, SCLK, 250000, 0)
         except apigpio_fork.apigpio.ApigpioError:
