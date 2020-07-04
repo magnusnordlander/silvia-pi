@@ -1089,6 +1089,34 @@ class Pi(object):
         return bytes, data
 
     @asyncio.coroutine
+    def spi_open(self, spi_channel, baud, spi_flags=0):
+        # I p1 spi_channel
+        # I p2 baud
+        # I p3 4
+        ## extension ##
+        # I spi_flags
+        """Open an spi device on a bus."""
+        extents = [struct.pack('I', spi_flags)]
+        res = yield from self._pigpio_aio_command_ext(_PI_CMD_SPIO, spi_channel, baud, 4, extents=extents)
+        return _u2i(res)
+
+    @asyncio.coroutine
+    def spi_close(self, handle):
+        """Close a spi device on a bus."""
+        res = yield from self._pigpio_aio_command(_PI_CMD_SPIC, handle, 0)
+        return _u2i(res)
+
+    @asyncio.coroutine
+    def spi_write(self, handle, data):
+        # I p1 handle
+        # I p2 0
+        # I p3 len
+        ## extension ##
+        # s len data bytes
+        res = yield from self._pigpio_aio_command_ext(_PI_CMD_SPIW, handle, 0, len(data), [data])
+        return _u2i(res)
+
+    @asyncio.coroutine
     def i2c_open(self, bus, address):
         """Open an i2c device on a bus."""
         res = yield from self._pigpio_aio_command(_PI_CMD_I2CO, int(bus), int(address))

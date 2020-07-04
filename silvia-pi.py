@@ -49,6 +49,8 @@ if __name__ == '__main__':
     loop.run_until_complete(pi.connect(address))
     loop.run_until_complete(safe_actuators(pi, conf.solenoid_pin, conf.pump_pin, conf.he_pin))
 
+    dc = DisplayController(hub, pi, dev_num=1, cs_num=0, dc=12, res=22)
+
     coros = [
         PigpioPins(hub, pi),
         TemperatureSensor(hub, s),
@@ -67,7 +69,7 @@ if __name__ == '__main__':
         ),
         BrewTimer(hub),
         WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
-        DisplayController(hub, pi),
+        dc,
         BrewProfiler(hub, conf.brew_profile_directory)
     ]
 
@@ -90,3 +92,4 @@ if __name__ == '__main__':
         loop.run_forever()
     finally:
         loop.run_until_complete(safe_actuators(pi, conf.solenoid_pin, conf.pump_pin, conf.he_pin))
+        loop.run_until_complete(dc.close_handle())

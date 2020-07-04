@@ -5,13 +5,6 @@ from time import time
 from coroutines import Base
 import apigpio_fork
 
-CE = 18
-SCLK = 21
-MOSI = 20
-MISO = 19
-DC = 12
-RES = 22
-
 # Constants
 SSD1306_I2C_ADDRESS = 0x3C    # 011110+SA0+RW - 0x3C or 0x3D
 SSD1306_SETCONTRAST = 0x81
@@ -51,9 +44,15 @@ SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A
 
 
 class DisplayController(Base):
-    def __init__(self, hub, pi):
+    def __init__(self, hub, pi, cs_num, dev_num, dc, res):
         super().__init__(hub)
+        self.res = res
+        self.dc = dc
+        self.dev_num = dev_num
+        self.cs_num = cs_num
         self.pi = pi
+
+        self.spi_handle = None
 
         self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, 0.0)
         self.define_ivar('settemp', topics.TOPIC_SET_POINT, 0.0)
@@ -76,9 +75,12 @@ class DisplayController(Base):
 
     async def run(self):
         try:
-            await self.pi.bb_spi_open(CE, MISO, MOSI, SCLK, 250000, 0)
-        except apigpio_fork.apigpio.ApigpioError:
-            pass
+            self.spi_handle = await self.pi.spi_open(0, 24000000, 256)
+            print("Opened display SPI handle ", self.spi_handle)
+        except apigpio_fork.apigpio.ApigpioError as err:
+            print("Pigpio error, display disabled")
+            print(err)
+            return
 
         await self.begin()
         await self.clear()
@@ -113,7 +115,16 @@ class DisplayController(Base):
 
                 await asyncio.sleep(1)
         finally:
-            await self.pi.bb_spi_close(CE)
+            await self.close_handle()
+
+    async def close_handle(self):
+        if self.spi_handle is not None:
+            print("Clearing display")
+            await self.clear()
+
+            print("Closing SPI handle ", self.spi_handle)
+            await self.pi.spi_close(self.spi_handle)
+            self.spi_handle = None
 
     def draw_image(self, draw, top, bottom, width, height, font, x):
         # Draw a black filled box to clear the image.
@@ -242,24 +253,32 @@ class DisplayController(Base):
 
     async def reset(self):
         # Set reset high for a millisecond.
-        await self.pi.write(RES, 1)
+        await self.pi.write(self.res, 1)
         await asyncio.sleep(0.001)
         # Set reset low for 10 milliseconds.
-        await self.pi.write(RES, 0)
+        await self.pi.write(self.res, 0)
         await asyncio.sleep(0.010)
         # Set reset high again.
-        await self.pi.write(RES, 1)
+        await self.pi.write(self.res, 1)
 
     async def command_bytes(self, bytes):
+        if self.spi_handle is None:
+            print("No SPI Handle, can't send command")
+            return
+
         if type(bytes) == int:
             bytes = [bytes]
 
-        await self.pi.write(DC, 0)
-        await self.pi.bb_spi_xfer(CE, bytes)
+        await self.pi.write(self.dc, 0)
+        await self.pi.spi_write(self.spi_handle, bytes)
 
     async def display_bytes(self, bytes):
-        await self.pi.write(DC, 1)
-        await self.pi.bb_spi_xfer(CE, bytes)
+        if self.spi_handle is None:
+            print("No SPI Handle, can't send display data")
+            return
+
+        await self.pi.write(self.dc, 1)
+        await self.pi.spi_write(self.spi_handle, bytes)
 
     async def clear(self):
         await self.command_bytes([
