@@ -52,7 +52,7 @@ class DisplayController(Base):
         self.cs_num = cs_num
         self.pi = pi
 
-        self.low_contrast = 0x30
+        self.low_contrast = 0x00
         self.high_contrast = 0xCF
 
         self.spi_handle = None
@@ -294,5 +294,12 @@ class DisplayController(Base):
 
         await self.display_bytes([0x00] * 128 * 8)
 
+    async def invert(self):
+        while True:
+            await asyncio.sleep(10)
+            await self.command_bytes(SSD1306_INVERTDISPLAY)
+            await asyncio.sleep(1)
+            await self.command_bytes(SSD1306_NORMALDISPLAY)
+
     def futures(self, loop):
-        return [*super(DisplayController, self).futures(loop), self.run()]
+        return [*super(DisplayController, self).futures(loop), self.run(), self.invert()]
