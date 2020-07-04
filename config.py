@@ -17,11 +17,11 @@ try:
     import board
 
     boiler_temp_sensor_cs_pin = board.D26
-    group_temp_sensor_cs_pin = board.D7
+    group_temp_sensor_cs_pin = board.D13
 
-    he_pin = 4
-    solenoid_pin = 15
-    pump_pin = 14
+    he_pin = 4 # Gray
+    solenoid_pin = 15 # Black
+    pump_pin = 14 # White
 
     brew_button_pin = 16
     steam_button_pin = 5

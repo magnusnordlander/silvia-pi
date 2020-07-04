@@ -5,10 +5,10 @@ from time import time
 from coroutines import Base
 import apigpio_fork
 
-CE = 8
-SCLK = 11
-MOSI = 10
-MISO = 9
+CE = 18
+SCLK = 21
+MOSI = 20
+MISO = 19
 DC = 12
 RES = 22
 
