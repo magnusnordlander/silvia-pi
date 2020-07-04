@@ -117,8 +117,7 @@ class DisplayController(Base):
                 await self.display_image(image)
 
                 contrast = self.high_contrast if self.he_enabled else self.low_contrast
-                await self.command_bytes(SSD1306_SETCONTRAST)  # 0x81
-                await self.command_bytes(contrast)
+                await self.command_bytes([SSD1306_SETCONTRAST, contrast])
 
                 await asyncio.sleep(1)
         finally:
