@@ -23,7 +23,7 @@ try:
     solenoid_pin = 15  # Black
     pump_pin = 14  # White
 
-    brew_button_pin = 16
+    brew_button_pin = 27
     steam_button_pin = 5
     water_button_pin = 6
 except NotImplementedError:
@@ -33,7 +33,7 @@ except NotImplementedError:
     solenoid_pin = 15  # Black
     pump_pin = 14  # White
 
-    brew_button_pin = 16
+    brew_button_pin = 27
     steam_button_pin = 5
     water_button_pin = 6
 
