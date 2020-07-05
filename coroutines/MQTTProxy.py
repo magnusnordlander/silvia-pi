@@ -33,6 +33,7 @@ class MQTTProxy(Base):
             topics.TOPIC_STEAM_TEMPERATURE_DELTA: Mapping('steam_delta', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_PUMP_PIDVAL_FEED_FORWARD: Mapping('pump_feed_forward', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_OLED_SAVER: Mapping('oled_saver', mode=Mapping.MODE_READWRITE, formatter=Mapping.BoolFormatter),
+            topics.TOPIC_CAPTURE_DOSE: Mapping('capture_dose', mode=Mapping.MODE_WRITEONLY, formatter=Mapping.BoolFormatter),
         }
 
         if debug_mappings:
@@ -62,8 +63,10 @@ class MQTTProxy(Base):
 
                 await self.client.subscribe(self.read_topic(mapping.key))
 
-            task = asyncio.create_task(self.publish_values())
-            tasks.add(task)
+            pub_task = asyncio.create_task(self.publish_values())
+            heartbeat_task = asyncio.create_task(self.publish_heartbeat())
+            tasks.add(pub_task)
+            tasks.add(heartbeat_task)
 
             await asyncio.gather(*tasks)
 
@@ -78,6 +81,11 @@ class MQTTProxy(Base):
     async def read_values(self, messages, key, mapping):
         async for message in messages:
             self.hub.publish(key, mapping.formatter.from_mqtt(message.payload.decode()))
+
+    async def publish_heartbeat(self):
+        while True:
+            await self.client.publish(self.write_topic('heartbeat'), time.time())
+            await asyncio.sleep(10)
 
     async def publish_values(self):
         with PubSub.Listener(self.hub) as queue:

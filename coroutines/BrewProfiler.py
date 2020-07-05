@@ -17,6 +17,8 @@ class BrewProfiler(Base):
         self.current_brew_data = []
         self.current_brew_metadata = {}
 
+        self.dose_weight = None
+
         # We'll be triggering on temperature changes, everything else is collected as an ivar
         self.define_ivar('current_avgpid', topics.TOPIC_PID_AVERAGE_VALUE)
         self.define_ivar('current_weight', topics.TOPIC_SCALE_WEIGHT)
@@ -58,6 +60,9 @@ class BrewProfiler(Base):
                     self.current_brew_metadata['stop_time'] = time.time()
                     self.current_brew_metadata['stop_weight'] = self.current_weight
 
+                    if self.dose_weight is not None:
+                        self.current_brew_metadata['dose'] = self.dose_weight
+
                     await asyncio.sleep(self.post_brew_profiling_time)
 
                     self.current_brew_metadata['final_weight'] = self.current_weight
@@ -67,6 +72,12 @@ class BrewProfiler(Base):
                     self.reset()
 
                     self.store(brew_data, metadata)
+
+    async def capture_dose(self):
+        with PubSub.Subscription(self.hub, topics.TOPIC_CAPTURE_DOSE) as queue:
+            while True:
+                await queue.get()
+                self.dose_weight = self.current_weight
 
     async def temperature_update(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_ALL_TEMPERATURES) as queue:
@@ -98,6 +109,7 @@ class BrewProfiler(Base):
         self.profiling = False
         self.current_brew_data = []
         self.current_brew_metadata = {}
+        self.dose_weight = None
 
     def futures(self, loop):
         return [

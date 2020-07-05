@@ -26,6 +26,8 @@ TOPIC_PID_TERMS = "advice/pid/terms"
 TOPIC_START_BREW = "advice/brew/start"
 TOPIC_STOP_BREW = "advice/brew/stop"
 
+TOPIC_CAPTURE_DOSE = "advice/capture_dose"
+
 # Turn on/off the pump, or open/close the solenoid
 TOPIC_PUMP_ON = "actuator/pump"
 TOPIC_SOLENOID_OPEN = "actuator/solenoid"
