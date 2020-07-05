@@ -17,7 +17,7 @@ async def printer(hub, ignored_topics=frozenset()):
 
 
 async def publish_initial_authoritative_state(coros):
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(2)
     for coro in coros:
         coro.publish_authoritative()
 

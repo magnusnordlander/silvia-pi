@@ -12,6 +12,7 @@ class MQTTProxy(Base):
         self.prefix = prefix
 
         self.client = Client(server)
+        self.client._client.will_set(self.write_topic('LWT'), 'Offline', retain=True)
         self.last_send = {}
 
         self.mappings = {
@@ -50,6 +51,8 @@ class MQTTProxy(Base):
 
             # Connect to the MQTT broker
             await stack.enter_async_context(self.client)
+
+            await self.client.publish(self.write_topic('LWT'), "Online", retain=True)
 
             for key in self.mappings:
                 mapping = self.mappings[key]
