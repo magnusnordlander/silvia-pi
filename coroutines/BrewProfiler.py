@@ -116,5 +116,6 @@ class BrewProfiler(Base):
             *super(BrewProfiler, self).futures(loop),
             self.start_profiling(),
             self.stop_profiling(),
-            self.temperature_update()
+            self.temperature_update(),
+            self.capture_dose(),
         ]
