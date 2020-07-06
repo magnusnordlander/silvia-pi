@@ -22,13 +22,15 @@ Caveat emptor.
 * Crydom EZ240D5 SSR (Controls pump)
     * Also connected through the BSS138, but doesn't technically have to be
 * Acaia Lunar
-
-### Upcoming Hardware
-* 128x64 SPI OLED, SSD1306 controller
+* 128x64 SPI OLED, SSD1306 controller (Super weird one too, without a CS pin)
 * Another Adafruit MAX31865 sensor amplifier
 * PTFM101T1A0 PT100,1.2X4.0,T thermocouple
-* Adafruit ADS1083 4 channel ADC
+
+### Upcoming Hardware
+* Adafruit ADS1083 4 channel ADC (Have it, but haven't implemented anything
 * MIPAF1XX250PSAAX pressure transducer
+
+### Dismissed ideas
 * ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control, and proportional relays being super pricy)
    * MCPC2450A or similar
    * Adafruit MCP4725 for control
@@ -48,9 +50,9 @@ Caveat emptor.
 * Add reaction time compensation for weighted shots
 * asyncio instead of multiprocess
 * 128x64 SPI OLED display
+* Second temperature sensor near group head
 
 ### In progress
-* Second temperature sensor near group head?
 * Pressure gauge
     * ~~Sensata 116CP or 60CP seems like good choices, but hard to come by~~ Haven't even been able to find in small quantities, not to mention that I don't know the price
     * ~~BDSensors DMP331P or DS200P could also be good choices~~ Too expensive (~$400)
@@ -67,41 +69,42 @@ Caveat emptor.
 * React frontend
 
 ### IO Allocations
-* SPI0CS1 (CS Pin 5): MAX31865 temp sensor 1
-   * GPIO10
-   * GPIO9
-   * GPIO11
-   * CS: GPIO26
-* SPI0CS2: MAX31865 temp sensor 2 (not yet implemented)
-   * GPIO10
-   * GPIO9
-   * GPIO11
-   * CS: GPI07
-* SPI1CS1: SSD1302 128x64 SPI OLED (implementation in progress)
-   * GPIO19
-   * GPIO20
-   * GPIO21
-   * CS: GPIO18
-* I2C: ADC for pressure sensor (not yet implemented)
-   * GPIO0
-   * GPIO1
-   * GPIO2
-   * GPIO3
-* GPIO04: Heating element (via BSS138)
-* GPIO15: Solenoid (via BSS138)
-* GPIO14: Pump (via BSS138)
-* GPIO16: Brew button
-* GPIO05: Steam button
-* GPIO06: Water button
 
-#### Free GPIO pins
-* GPIO12
-* GPIO17
-* GPIO22
-* GPIO23
-* GPIO24
-* GPIO25
-* GPIO27
+* GPIO00 - I2C
+* GPIO01 - I2C
+* GPIO02 - I2C SDA
+* GPIO03 - I2C SCL
+* GPIO04 - Heating element SSR Output
+* GPIO05 - Steam button input
+* GPIO06 - Water button input
+* GPIO07 - SPI0CE1 - Unusable
+* GPIO08 - SPI0CE0 - Unusable
+* GPIO09 - SPI0MISO - RTD SPI
+* GPIO10 - SPI0MOSI - RTD SPI
+* GPIO11 - SPI0SCLK - RTD SPI
+* GPIO12 - Display DC
+* GPIO13 - Group RTD CE
+* GPIO14 - Pump SSR Output
+* GPIO15 - Solenoid SSR Output
+* GPIO16 - SPI1CE2 - Unusable
+* GPIO17 - SPI1CE1 - Unusable
+* GPIO18 - SPI1CE0 - Unusable
+* GPIO19 - SPI1MISO - Unusable
+* GPIO20 - SPI1MOSI - Display SPI
+* GPIO21 - SPI1SCLK - Display SPI
+* GPIO22 - Display RES
+* GPIO23 - Red button input
+* GPIO24 - Blue button input
+* GPIO25 - White button input
+* GPIO26 - Boiler RTD CE
+* GPIO27 - Brew button Input
+
+#### I/O Notes
+* Is GPIO00 and GPIO01 really needed for I2C?
+* SPI0CE0 and SPI0CE1... Why can't I just use them for the RTDs? (I did try)
+* The MAX31865 requires SPI Mode 1 or 3, meaning they can only be on SPI0
+* The display is weird, it doesn't have a CE pin, so it uses all 3 chip selects of SPI1
+   * If I want other SPI accessories, I'll either need to replace the display or to see if I can solder a CE pin on there
 
 #### Super weird edge cases no one but me should worry about
 * If we're already running the water pump and start brewing, what should happen?
