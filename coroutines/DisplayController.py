@@ -70,6 +70,7 @@ class DisplayController(Base):
         self.define_ivar('keep_scale_connected', topics.TOPIC_CONNECT_TO_SCALE, False)
         self.define_ivar('brew_to_weight', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
         self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT)
+        self.define_ivar('dose', topics.TOPIC_DOSE, None)
         self.define_ivar('use_preinfusion', topics.TOPIC_USE_PREINFUSION, False)
         self.define_ivar('preinfusion_time', topics.TOPIC_PREINFUSION_TIME, 1.2)
         self.define_ivar('dwell_time', topics.TOPIC_DWELL_TIME, 2.5)
@@ -197,13 +198,16 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
-            draw.text((x, top + 32), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
+            dose = self.dose + "g" if self.dose is not None else "N/A"
+            draw.text((x, top + 32), "Dose: {}".format(dose), font=font, fill=255)
+
+            draw.text((x, top + 40), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
                                                                    round(self.preinfusion_time, 1),
                                                                    round(self.dwell_time, 1)), font=font, fill=255)
             if self.tunings:
-                draw.text((x, top + 40), "K: ({:.1f},{:.1f},{:.1f},{})".format(*self.tunings, self.responsiveness),
+                draw.text((x, top + 48), "K: ({:.1f},{:.1f},{:.1f},{})".format(*self.tunings, self.responsiveness),
                           font=font, fill=255)
-            draw.text((x, top + 48), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
+            draw.text((x, top + 56), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
 
     async def display_image(self, image):
         buffer = [0]*(128*8)
