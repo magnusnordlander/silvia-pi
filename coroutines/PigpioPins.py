@@ -24,9 +24,9 @@ class PigpioPins(Base):
         }
 
         momentary_switch_pins = {
-            23: topics.TOPIC_RED_BUTTON,
-            24: topics.TOPIC_BLUE_BUTTON,
-            25: topics.TOPIC_WHITE_BUTTON,
+            conf.red_button_pin: topics.TOPIC_RED_BUTTON,
+            conf.blue_button_pin: topics.TOPIC_BLUE_BUTTON,
+            conf.white_button_pin: topics.TOPIC_WHITE_BUTTON,
         }
 
         for pin in maintained_switch_pins:
