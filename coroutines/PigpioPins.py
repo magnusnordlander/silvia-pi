@@ -39,7 +39,7 @@ class PigpioPins(Base):
             yield from pi.set_mode(pin, apigpio_fork.INPUT)
             yield from pi.set_pull_up_down(pin, apigpio_fork.PUD_DOWN)
             yield from pi.set_glitch_filter(pin, 5000)
-            yield from pi.add_callback(pin, edge=apigpio_fork.RISING_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=maintained_switch_pins[pin], pi=pi))
+            yield from pi.add_callback(pin, edge=apigpio_fork.RISING_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=momentary_switch_pins[pin], pi=pi))
 
     async def maybe_update_button(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_BUTTON_PROXY) as queue:
