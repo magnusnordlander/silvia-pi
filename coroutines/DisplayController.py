@@ -61,11 +61,13 @@ class DisplayController(Base):
 
         self.define_ivar('avgtemp', topics.TOPIC_AVERAGE_BOILER_TEMPERATURE, 0.0)
         self.define_ivar('settemp', topics.TOPIC_SET_POINT, 0.0)
+        self.define_ivar('group_temp', topics.TOPIC_CURRENT_GROUP_TEMPERATURE, 0.0)
         self.define_ivar('last_brew_time', topics.TOPIC_LAST_BREW_DURATION)
         self.define_ivar('brew_start', topics.TOPIC_CURRENT_BREW_START_TIME)
         self.define_ivar('he_enabled', topics.TOPIC_HE_ENABLED, False)
         self.define_ivar('scale_weight', topics.TOPIC_SCALE_WEIGHT)
         self.define_ivar('scale_is_connected', topics.TOPIC_SCALE_CONNECTED, False)
+        self.define_ivar('keep_scale_connected', topics.TOPIC_CONNECT_TO_SCALE, False)
         self.define_ivar('brew_to_weight', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
         self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT)
         self.define_ivar('use_preinfusion', topics.TOPIC_USE_PREINFUSION, False)
@@ -148,12 +150,17 @@ class DisplayController(Base):
         # Draw a black filled box to clear the image.
         draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
-        if self.last_brew_time is not None:
-            shot_time = round(self.last_brew_time, 2)
-        elif self.brew_start is not None:
+        if self.brew_start is not None:
             shot_time = round(time() - self.brew_start, 2)
+        elif self.last_brew_time is not None:
+            shot_time = round(self.last_brew_time, 2)
         else:
             shot_time = 0
+
+        if self.scale_is_connected:
+            scale_weight = round(self.scale_weight or 0, 1)
+        else:
+            scale_weight = "*" if not self.keep_scale_connected else "#"
 
         if self.steam_mode:
             draw.text((x, top + 0), "Steam mode", font=font, fill=255)
@@ -163,14 +170,15 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 8), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), self.steam_setpoint),
                           font=font, fill=255)
+            draw.text((x, top + 16), "Group T: {}°C", format(round(self.group_temp, 1)))
 
-            draw.text((x, top + 16), "Time: {} s".format(shot_time), font=font, fill=255)
-            scale_weight = round(self.scale_weight or 0, 1) if self.scale_is_connected else "*"
+            draw.text((x, top + 24), "Time: {} s".format(shot_time), font=font, fill=255)
+
             if self.brew_to_weight:
-                draw.text((x, top + 24), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)),
+                draw.text((x, top + 32), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
             else:
-                draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
+                draw.text((x, top + 32), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
 
         else:
@@ -180,21 +188,22 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 0), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), round(self.settemp)),
                           font=font, fill=255)
-            draw.text((x, top + 8), "Time: {} s".format(shot_time), font=font, fill=255)
-            scale_weight = round(self.scale_weight or 0, 1) if self.scale_is_connected else "*"
+            draw.text((x, top + 8), "Group T: {}°C", format(round(self.group_temp, 1)))
+            draw.text((x, top + 16), "Time: {} s".format(shot_time), font=font, fill=255)
+
             if self.brew_to_weight:
-                draw.text((x, top + 16), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)),
+                draw.text((x, top + 24), "M: {} g > {} g".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
             else:
-                draw.text((x, top + 16), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
+                draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
-            draw.text((x, top + 24), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
+            draw.text((x, top + 32), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
                                                                    round(self.preinfusion_time, 1),
                                                                    round(self.dwell_time, 1)), font=font, fill=255)
             if self.tunings:
-                draw.text((x, top + 32), "K: ({:.1f},{:.1f},{:.1f},{})".format(*self.tunings, self.responsiveness),
+                draw.text((x, top + 40), "K: ({:.1f},{:.1f},{:.1f},{})".format(*self.tunings, self.responsiveness),
                           font=font, fill=255)
-            draw.text((x, top + 40), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
+            draw.text((x, top + 48), "PID: {}".format(round(self.avgpid) if self.avgpid else None), font=font, fill=255)
 
     async def display_image(self, image):
         buffer = [0]*(128*8)
