@@ -16,19 +16,19 @@ Caveat emptor.
 ### Current Hardware
 * Raspberry Pi Zero W
 * Adafruit PT100 RTD Temperature Sensor Amplifier - MAX31865
-* ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor
+* ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor (boiler sensor)
 * Crydom D2425D Dual SSR (Controls heater and solenoid)
     * Adafruit BSS138 4-channel I2C-safe Bi-directional Logic Level Converter (I didn't realize the D2425D required >4 V for control)
 * Crydom EZ240D5 SSR (Controls pump)
     * Also connected through the BSS138, but doesn't technically have to be
 * Acaia Lunar
 * 128x64 SPI OLED, SSD1306 controller (Super weird one too, without a CS pin)
-* Another Adafruit MAX31865 sensor amplifier
-* PTFM101T1A0 PT100,1.2X4.0,T thermocouple
+* Another Adafruit MAX31865 sensor amplifier (for group head sensor)
+* PTFM101T1A0 PT100,1.2X4.0,T thermocouple (group head sensor)
 
 ### Upcoming Hardware
 * Adafruit ADS1083 4 channel ADC (Have it, but haven't implemented anything
-* MIPAF1XX250PSAAX pressure transducer
+* MIPAF1XX250PSAAX pressure transducer (Have it, but haven't installed it)
 
 ### Dismissed ideas
 * ~~Proportional relay~~ (Dismissed due to non-proportional relays providing good enough control, and proportional relays being super pricy)
@@ -53,6 +53,8 @@ Caveat emptor.
 * Second temperature sensor near group head
 
 ### In progress
+* Dynamic reaction time compensation for weighted shots
+   * Still haven't decided whether to project the shots as linear or polynomial, linear seems to work well for well-extracting shots, weird shots sometimes get polynomial
 * Pressure gauge
     * ~~Sensata 116CP or 60CP seems like good choices, but hard to come by~~ Haven't even been able to find in small quantities, not to mention that I don't know the price
     * ~~BDSensors DMP331P or DS200P could also be good choices~~ Too expensive (~$400)
