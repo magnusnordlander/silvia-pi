@@ -198,7 +198,7 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
-            dose = self.dose + "g" if self.dose is not None else "N/A"
+            dose = str(round(self.dose, 1)) + "g" if self.dose is not None else "N/A"
             draw.text((x, top + 32), "Dose: {}".format(dose), font=font, fill=255)
 
             draw.text((x, top + 40), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
