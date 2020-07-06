@@ -7,6 +7,10 @@ TOPIC_COFFEE_BUTTON = "sensor/button/coffee"
 TOPIC_WATER_BUTTON = "sensor/button/water"
 TOPIC_STEAM_BUTTON = "sensor/button/steam"
 
+TOPIC_RED_BUTTON = "sensor/button/red"
+TOPIC_BLUE_BUTTON = "sensor/button/blue"
+TOPIC_WHITE_BUTTON = "sensor/button/white"
+
 # Sensor data
 TOPIC_CURRENT_BOILER_TEMPERATURE = "sensor/boiler_temperature"
 TOPIC_AVERAGE_BOILER_TEMPERATURE = "sensor/average_boiler_temperature"

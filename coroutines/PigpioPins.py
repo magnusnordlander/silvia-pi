@@ -17,17 +17,29 @@ class PigpioPins(Base):
 
     @asyncio.coroutine
     def subscribe_to_pins(self, pi, hub):
-        pins = {
+        maintained_switch_pins = {
             conf.brew_button_pin: topics.TOPIC_COFFEE_BUTTON,
             conf.steam_button_pin: topics.TOPIC_STEAM_BUTTON,
             conf.water_button_pin: topics.TOPIC_WATER_BUTTON,
         }
 
-        for pin in pins:
+        momentary_switch_pins = {
+            23: topics.TOPIC_RED_BUTTON,
+            24: topics.TOPIC_BLUE_BUTTON,
+            25: topics.TOPIC_WHITE_BUTTON,
+        }
+
+        for pin in maintained_switch_pins:
             yield from pi.set_mode(pin, apigpio_fork.INPUT)
             yield from pi.set_pull_up_down(pin, apigpio_fork.PUD_DOWN)
             yield from pi.set_glitch_filter(pin, 5000)
-            yield from pi.add_callback(pin, edge=apigpio_fork.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=pins[pin], pi=pi))
+            yield from pi.add_callback(pin, edge=apigpio_fork.EITHER_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=maintained_switch_pins[pin], pi=pi))
+
+        for pin in momentary_switch_pins:
+            yield from pi.set_mode(pin, apigpio_fork.INPUT)
+            yield from pi.set_pull_up_down(pin, apigpio_fork.PUD_DOWN)
+            yield from pi.set_glitch_filter(pin, 5000)
+            yield from pi.add_callback(pin, edge=apigpio_fork.RISING_EDGE, func=partial(on_input_forward_to_hub, hub=hub, topic=maintained_switch_pins[pin], pi=pi))
 
     async def maybe_update_button(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_BUTTON_PROXY) as queue:
