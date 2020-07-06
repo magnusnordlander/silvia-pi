@@ -170,7 +170,7 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 8), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), self.steam_setpoint),
                           font=font, fill=255)
-            draw.text((x, top + 16), "Gr T: {}°C".format(round(self.group_temp, 1)))
+            draw.text((x, top + 16), "Gr T: {}°C".format(round(self.group_temp, 1)), font=font, fill=255)
 
             draw.text((x, top + 24), "Time: {} s".format(shot_time), font=font, fill=255)
 
@@ -188,7 +188,7 @@ class DisplayController(Base):
             else:
                 draw.text((x, top + 0), "T: {}°C (> {}°C)".format(round(self.avgtemp, 1), round(self.settemp)),
                           font=font, fill=255)
-            draw.text((x, top + 8), "Gr T: {}°C".format(round(self.group_temp, 1)))
+            draw.text((x, top + 8), "Gr T: {}°C".format(round(self.group_temp, 1)), font=font, fill=255)
             draw.text((x, top + 16), "Time: {} s".format(shot_time), font=font, fill=255)
 
             if self.brew_to_weight:
