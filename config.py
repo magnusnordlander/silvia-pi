@@ -16,8 +16,8 @@ test_hardware = sys.platform == "darwin"
 try:
     import board
 
-    boiler_temp_sensor_cs_pin = board.D26
-    group_temp_sensor_cs_pin = board.D13
+    boiler_temp_sensor_cs_pin = board.D13
+    group_temp_sensor_cs_pin = board.D26
 
     he_pin = 4  # Gray
     solenoid_pin = 15  # Black
