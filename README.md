@@ -9,6 +9,10 @@ At some point in the future, I may make this more usable by others, but that poi
 
 Caveat emptor.
 
+### Related repositories
+* [magnusnordlander/brewfiler](https://github.com/magnusnordlander/brewfiler): A viewer for the brewing profiles produced by this project
+* [magnusnordlander/brew-profiles](https://github.com/magnusnordlander/brew-profiles): The brew profiles from my machine, auto-synced to Github
+
 ### Branches
 * You're currently looking at the master branch. It's what I'm currently running on my espresso machine. Consider it beta quality *at best*.
 * There's the multiprocess branch, which is an older version, more architecturally similar to brycesub/silvia-pi
@@ -24,7 +28,8 @@ Caveat emptor.
 * Acaia Lunar
 * 128x64 SPI OLED, SSD1306 controller (Super weird one too, without a CS pin)
 * Another Adafruit MAX31865 sensor amplifier (for group head sensor)
-* PTFM101T1A0 PT100,1.2X4.0,T thermocouple (group head sensor)
+* Another ETP-RT-4-24-PT100B - SMT Ring Terminal Probe -40 °C 250 °C Pt100, Variohm EuroSensor (group head sensor)
+* ~~PTFM101T1A0 PT100,1.2X4.0,T thermocouple (group head sensor)~~
 
 ### Upcoming Hardware
 * Adafruit ADS1083 4 channel ADC (Have it, but haven't implemented anything
@@ -51,10 +56,11 @@ Caveat emptor.
 * asyncio instead of multiprocess
 * 128x64 SPI OLED display
 * Second temperature sensor near group head
+* Replaced group head sensor with another ETP-RT-4-24-PT100B. The PTFM101T1A0 was behaving erratically. Possibly shorting? I may reinstall one of these, because it was getting interesting readings and I have spares. We'll see.
 
 ### In progress
 * Dynamic reaction time compensation for weighted shots
-   * Still haven't decided whether to project the shots as linear or polynomial, linear seems to work well for well-extracting shots, weird shots sometimes get polynomial
+   * Still haven't decided whether to project the shots as linear or polynomial, linear seems to work well for well-extracting shots, weird shots sometimes get polynomial. The data is available in [magnusnordlander/brew-profiles](https://github.com/magnusnordlander/brew-profiles).
 * Pressure gauge
     * ~~Sensata 116CP or 60CP seems like good choices, but hard to come by~~ Haven't even been able to find in small quantities, not to mention that I don't know the price
     * ~~BDSensors DMP331P or DS200P could also be good choices~~ Too expensive (~$400)
