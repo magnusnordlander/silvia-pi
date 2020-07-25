@@ -14,6 +14,8 @@ class WeightedShotController(Base):
 
         self.weighted_shot_reaction_compensation = weighted_shot_reaction_compensation
 
+        self.weighted_shot_reaction_time = 0.8
+
         self.tare_weight = 0.0
 
         self.previous_measurements = ResizableRingBuffer(8)
@@ -42,9 +44,13 @@ class WeightedShotController(Base):
                 if self.brewing and self.enable_weighted_shots:
                     self.previous_measurements.append((time(), weight))
                     self.previous_flow_rates.append(self.flow_rate())
-                    print("Flow rate: {:.2f} g/s".format(self.previous_flow_rates.avg()))
 
-                    nominal_weight = weight - self.weighted_shot_reaction_compensation - self.tare_weight
+                    reaction_compensation = self.previous_flow_rates.avg() * self.weighted_shot_reaction_time
+
+                    if reaction_compensation < 0:
+                        reaction_compensation = 0
+
+                    nominal_weight = weight - reaction_compensation - self.tare_weight
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
