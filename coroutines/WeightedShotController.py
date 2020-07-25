@@ -1,5 +1,6 @@
 from coroutines import Base
-from utils import topics, PubSub
+from utils import topics, PubSub, ResizableRingBuffer
+from time import time
 
 
 class WeightedShotController(Base):
@@ -14,6 +15,8 @@ class WeightedShotController(Base):
         self.weighted_shot_reaction_compensation = weighted_shot_reaction_compensation
 
         self.tare_weight = 0.0
+
+        self.previous_measurements = ResizableRingBuffer(8)
 
     async def on_start_brew(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_START_BREW) as queue:
@@ -36,9 +39,21 @@ class WeightedShotController(Base):
                 self.current_weight = weight
 
                 if self.brewing and self.enable_weighted_shots:
+                    self.previous_measurements.append((time(), weight))
+                    print("Flow rate: %.2f g/s".format(self.flow_rate()))
+
                     nominal_weight = weight - self.weighted_shot_reaction_compensation - self.tare_weight
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
+
+    def flow_rate(self):
+        first_time, first_weight = self.previous_measurements.values()[0]
+        last_time, last_weight = self.previous_measurements.values()[-1]
+
+        time_elapsed = last_time - first_time
+        weight_added = last_weight - first_weight
+
+        return weight_added / time_elapsed
 
     def futures(self, loop):
         return [

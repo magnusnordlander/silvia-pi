@@ -14,5 +14,11 @@ class ResizableRingBuffer:
         self.deque = deque(self.deque, maxlen=new_size)
         self.size_max = new_size
 
+    def clear(self):
+        self.deque.clear()
+
+    def values(self):
+        return list(self.deque)
+
     def avg(self):
         return sum(self.deque) / len(self.deque)
