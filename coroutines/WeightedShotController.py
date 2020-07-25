@@ -40,7 +40,7 @@ class WeightedShotController(Base):
 
                 if self.brewing and self.enable_weighted_shots:
                     self.previous_measurements.append((time(), weight))
-                    print("Flow rate: %.2f g/s".format(self.flow_rate()))
+                    print("Flow rate: {:.2f} g/s".format(self.flow_rate()))
 
                     nominal_weight = weight - self.weighted_shot_reaction_compensation - self.tare_weight
                     if nominal_weight >= self.target_weight:
