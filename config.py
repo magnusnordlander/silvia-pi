@@ -19,9 +19,9 @@ try:
     boiler_temp_sensor_cs_pin = board.D13
     group_temp_sensor_cs_pin = board.D26
 
-    he_pin = 4  # Gray
-    solenoid_pin = 15  # Black
-    pump_pin = 14  # White
+    he_pin = 15  # Gray
+    solenoid_pin = 14  # Black
+    pump_pin = 4  # White
 
     brew_button_pin = 27
     steam_button_pin = 5
@@ -33,9 +33,9 @@ try:
 except NotImplementedError:
     boiler_temp_sensor_cs_pin = None
     group_temp_sensor_cs_pin = None
-    he_pin = 4  # Gray
-    solenoid_pin = 15  # Black
-    pump_pin = 14  # White
+    he_pin = 15  # Gray
+    solenoid_pin = 14  # Black
+    pump_pin = 4  # White
 
     brew_button_pin = 27
     steam_button_pin = 5
