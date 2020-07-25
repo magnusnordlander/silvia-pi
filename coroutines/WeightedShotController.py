@@ -53,6 +53,9 @@ class WeightedShotController(Base):
         time_elapsed = last_time - first_time
         weight_added = last_weight - first_weight
 
+        if time_elapsed == 0:
+            return 0
+
         return weight_added / time_elapsed
 
     def futures(self, loop):
