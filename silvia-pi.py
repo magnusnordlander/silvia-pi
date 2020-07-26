@@ -68,7 +68,7 @@ if __name__ == '__main__':
             default_dwell_time=conf.dwell_time
         ),
         BrewTimer(hub),
-        WeightedShotController(hub, conf.weighted_shot_reaction_compensation),
+        WeightedShotController(hub, conf.weighted_shot_reaction_time),
         dc,
         BrewProfiler(hub, conf.brew_profile_directory)
     ]
