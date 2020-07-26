@@ -50,7 +50,7 @@ class WeightedShotController(Base):
                     if reaction_compensation < 0:
                         reaction_compensation = 0
 
-                    nominal_weight = weight - reaction_compensation - self.tare_weight
+                    nominal_weight = weight + reaction_compensation - self.tare_weight
                     if nominal_weight >= self.target_weight:
                         self.hub.publish(topics.TOPIC_STOP_BREW, None)
 
