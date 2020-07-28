@@ -24,6 +24,8 @@ class WeightedShotController(Base):
             while True:
                 await queue.get()
                 self.tare_weight = self.current_weight
+                self.previous_flow_rates.clear()
+                self.previous_measurements.clear()
                 self.brewing = True
 
     async def on_stop_brew(self):
@@ -46,6 +48,10 @@ class WeightedShotController(Base):
                     reaction_compensation = self.previous_flow_rates.avg() * self.weighted_shot_reaction_time
 
                     if reaction_compensation < 0:
+                        reaction_compensation = 0
+
+                    # Disregard reaction compensations larger than 5 grams, something is obviously up here
+                    if reaction_compensation > 5:
                         reaction_compensation = 0
 
                     nominal_weight = weight + reaction_compensation - self.tare_weight
