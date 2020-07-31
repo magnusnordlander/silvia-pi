@@ -31,7 +31,9 @@ TOPIC_START_BREW = "advice/brew/start"
 TOPIC_STOP_BREW = "advice/brew/stop"
 
 TOPIC_CAPTURE_DOSE = "advice/capture_dose"
+TOPIC_CAPTURE_DOSE_AND_SET_TARGET_WEIGHT = "advice/capture_dose_and_set_target_weight"
 TOPIC_DOSE = "status/dose"
+TOPIC_TARGET_RATIO = "status/target_ratio"
 
 # Turn on/off the pump, or open/close the solenoid
 TOPIC_PUMP_ON = "actuator/pump"

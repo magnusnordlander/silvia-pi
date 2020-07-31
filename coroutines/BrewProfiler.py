@@ -17,7 +17,7 @@ class BrewProfiler(Base):
         self.current_brew_data = []
         self.current_brew_metadata = {}
 
-        self.define_ivar('dose_weight', topics.TOPIC_DOSE, None, authoritative=True)
+        self.define_ivar('dose_weight', topics.TOPIC_DOSE, None)
 
         # We'll be triggering on temperature changes, everything else is collected as an ivar
         self.define_ivar('current_avgpid', topics.TOPIC_PID_AVERAGE_VALUE)
@@ -73,12 +73,6 @@ class BrewProfiler(Base):
 
                     self.store(brew_data, metadata)
 
-    async def capture_dose(self):
-        with PubSub.Subscription(self.hub, topics.TOPIC_CAPTURE_DOSE) as queue:
-            while True:
-                await queue.get()
-                self.hub.publish(topics.TOPIC_DOSE, self.current_weight)
-
     async def temperature_update(self):
         with PubSub.Subscription(self.hub, topics.TOPIC_ALL_TEMPERATURES) as queue:
             while True:
@@ -117,5 +111,4 @@ class BrewProfiler(Base):
             self.start_profiling(),
             self.stop_profiling(),
             self.temperature_update(),
-            self.capture_dose(),
         ]

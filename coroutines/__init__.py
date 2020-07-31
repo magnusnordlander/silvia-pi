@@ -13,3 +13,4 @@ from .BrewTimer import BrewTimer
 from .WeightedShotController import WeightedShotController
 from .DisplayController import DisplayController
 from .BrewProfiler import BrewProfiler
+from .DoseControl import DoseControl

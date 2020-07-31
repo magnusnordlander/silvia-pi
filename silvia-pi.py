@@ -70,7 +70,8 @@ if __name__ == '__main__':
         BrewTimer(hub),
         WeightedShotController(hub, conf.weighted_shot_reaction_time),
         dc,
-        BrewProfiler(hub, conf.brew_profile_directory)
+        BrewProfiler(hub, conf.brew_profile_directory),
+        DoseControl(hub, conf.default_target_ratio),
     ]
 
     futures = functools.reduce(lambda carry, coro: carry + coro.futures(loop), coros, [])

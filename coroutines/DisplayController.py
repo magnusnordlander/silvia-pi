@@ -70,6 +70,7 @@ class DisplayController(Base):
         self.define_ivar('keep_scale_connected', topics.TOPIC_CONNECT_TO_SCALE, False)
         self.define_ivar('brew_to_weight', topics.TOPIC_ENABLE_WEIGHTED_SHOT, False)
         self.define_ivar('target_weight', topics.TOPIC_TARGET_WEIGHT)
+        self.define_ivar('target_ratio', topics.TOPIC_TARGET_RATIO)
         self.define_ivar('dose', topics.TOPIC_DOSE, None)
         self.define_ivar('use_preinfusion', topics.TOPIC_USE_PREINFUSION, False)
         self.define_ivar('preinfusion_time', topics.TOPIC_PREINFUSION_TIME, 1.2)
@@ -199,7 +200,7 @@ class DisplayController(Base):
                 draw.text((x, top + 24), "M: {} g (> {} g)".format(scale_weight, round(self.target_weight or 0, 1)),
                           font=font, fill=255)
             dose = str(round(self.dose, 1)) + "g" if self.dose is not None else "N/A"
-            draw.text((x, top + 32), "Dose: {}".format(dose), font=font, fill=255)
+            draw.text((x, top + 32), "Dose: {}, TR: 1:{}".format(dose, self.target_ratio), font=font, fill=255)
 
             draw.text((x, top + 40), "PI: {}, T: {}, D: {}".format('Y' if self.use_preinfusion else 'N',
                                                                    round(self.preinfusion_time, 1),
