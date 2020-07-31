@@ -28,5 +28,5 @@ class DoseControl(Base):
         return [
             *super(DoseControl, self).futures(loop),
             self.capture_dose(),
-            self.capture_dose_and_set_target_weight(),
+            self.capture_dose_and_set_weight(),
         ]
