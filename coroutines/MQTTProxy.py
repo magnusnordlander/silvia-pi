@@ -29,6 +29,8 @@ class MQTTProxy(Base):
             topics.TOPIC_TARGET_WEIGHT: Mapping('target_weight', formatter=Mapping.FloatFormatter, mode=Mapping.MODE_READWRITE),
             topics.TOPIC_TARGET_RATIO: Mapping('target_ratio', formatter=Mapping.FloatFormatter, mode=Mapping.MODE_READWRITE),
             topics.TOPIC_USE_PREINFUSION: Mapping('use_preinfusion', mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_PREINFUSION_TIME: Mapping('preinfusion_time', formatter=Mapping.FloatFormatter, mode=Mapping.MODE_READWRITE),
+            topics.TOPIC_DWELL_TIME: Mapping('dwell_time', formatter=Mapping.FloatFormatter, mode=Mapping.MODE_READWRITE),
             topics.TOPIC_SET_POINT: Mapping('settemp', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_HE_ENABLED: Mapping('is_awake', mode=Mapping.MODE_READWRITE),
             topics.TOPIC_STEAM_TEMPERATURE_SET_POINT: Mapping('steam_set_point', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
@@ -36,6 +38,7 @@ class MQTTProxy(Base):
             topics.TOPIC_PUMP_PIDVAL_FEED_FORWARD: Mapping('pump_feed_forward', mode=Mapping.MODE_READWRITE, formatter=Mapping.FloatFormatter),
             topics.TOPIC_OLED_SAVER: Mapping('oled_saver', mode=Mapping.MODE_READWRITE, formatter=Mapping.BoolFormatter),
             topics.TOPIC_CAPTURE_DOSE: Mapping('capture_dose', mode=Mapping.MODE_WRITEONLY, formatter=Mapping.BoolFormatter),
+            topics.TOPIC_SOLENOID_OPEN: Mapping('solenoid', mode=Mapping.MODE_READWRITE),
             topics.TOPIC_CAPTURE_DOSE_AND_SET_TARGET_WEIGHT: Mapping('capture_dose_set_weight', mode=Mapping.MODE_WRITEONLY, formatter=Mapping.BoolFormatter),
         }
 
