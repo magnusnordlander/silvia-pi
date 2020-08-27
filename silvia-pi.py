@@ -40,7 +40,7 @@ if __name__ == '__main__':
         b = boiler.EmulatedBoiler(s)
         p = pump.EmulatedPump()
     else:
-        s = temperature_sensor.Max31865Sensor(conf.boiler_temp_sensor_cs_pin, conf.group_temp_sensor_cs_pin, rtd_nominal_boiler=100.65, rtd_nominal_group=100.8)
+        s = temperature_sensor.Max31865Sensor(conf.boiler_temp_sensor_cs_pin, conf.group_temp_sensor_cs_pin, rtd_nominal_boiler=100.65, rtd_nominal_group=101.5)
         b = boiler.GpioBoiler(conf.he_pin)
         p = pump.GpioPump(conf.pump_pin)
 
